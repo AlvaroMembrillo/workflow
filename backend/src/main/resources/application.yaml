@@ -1,0 +1,17 @@
+# application.yml — común
+spring:
+  application:
+    name: portal-empleo
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

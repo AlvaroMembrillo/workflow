@@ -1,0 +1,11 @@
+# application-dev.yml — local con Docker Compose
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/portal_empleo
+    username: portal
+    password: portal
+
+logging:
+  level:
+    com.alvaro.portalempleo: DEBUG
+    org.hibernate.SQL: DEBUG
