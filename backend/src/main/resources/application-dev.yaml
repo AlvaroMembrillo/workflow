@@ -7,5 +7,5 @@ spring:
 
 logging:
   level:
-    com.alvaro.portalempleo: DEBUG
+    com.alvaro.workflow: DEBUG
     org.hibernate.SQL: DEBUG
