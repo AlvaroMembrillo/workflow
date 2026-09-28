@@ -5,6 +5,12 @@ spring:
     username: portal
     password: portal
 
+app:
+  jwt:
+    # Se genera sola la primera vez que arranca la aplicación (está en .gitignore)
+    clave-privada: .jwt/dev-clave-privada.pem
+    generar-clave-si-no-existe: true
+
 logging:
   level:
     com.alvaro.workflow: DEBUG
