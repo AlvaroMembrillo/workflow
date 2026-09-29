@@ -15,3 +15,11 @@ server:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+app:
+  jwt:
+    issuer: workflow-api
+    duracion-token: 1h
+    clave-privada: ${JWT_CLAVE_PRIVADA:}
+  cors:
+    origenes-permitidos: ${CORS_ORIGENES_PERMITIDOS:http://localhost:4200}
