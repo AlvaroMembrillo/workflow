@@ -14,26 +14,18 @@ export const routes: Routes = [
   {
     path: '',
     title: 'Ofertas de empleo',
-    loadComponent: enConstruccion,
-    data: {
-      titulo: 'Ofertas de empleo',
-      descripcion: 'Aquí estará el buscador de ofertas, con el salario de cada una a la vista.',
-    },
+    loadComponent: () => import('./paginas/ofertas/listado/listado').then((m) => m.Listado),
   },
   {
     path: 'ofertas/:id',
     title: 'Oferta',
-    loadComponent: enConstruccion,
-    data: {
-      titulo: 'Oferta',
-      descripcion: 'Aquí verás los detalles de la oferta y podrás inscribirte.',
-    },
+    loadComponent: () => import('./paginas/ofertas/detalle/detalle').then((m) => m.Detalle),
   },
   {
     path: 'empresas/:id',
     title: 'Empresa',
-    loadComponent: enConstruccion,
-    data: { titulo: 'Empresa', descripcion: 'Aquí estará el perfil público de la empresa.' },
+    loadComponent: () =>
+      import('./paginas/empresas/perfil-publico/perfil-publico').then((m) => m.PerfilPublico),
   },
   {
     path: 'entrar',

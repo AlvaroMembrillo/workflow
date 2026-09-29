@@ -1,0 +1,21 @@
+<article class="tarjeta oferta">
+  <span class="inicial" aria-hidden="true">{{ inicial() }}</span>
+  <div class="cabecera">
+    @if (nivelTitulo() === 2) {
+      <h2>
+        <a class="enlace" [routerLink]="['/ofertas', oferta().id]">{{ oferta().titulo }}</a>
+      </h2>
+    } @else {
+      <h3>
+        <a class="enlace" [routerLink]="['/ofertas', oferta().id]">{{ oferta().titulo }}</a>
+      </h3>
+    }
+    <span class="fecha"><app-fecha [iso]="oferta().fechaCreacion" /></span>
+  </div>
+  <p class="empresa">{{ oferta().empresa.nombre }} · {{ oferta().ubicacion }}</p>
+  <app-salario [minimo]="oferta().salarioMinimo" [maximo]="oferta().salarioMaximo" />
+  <ul class="etiquetas" aria-label="Condiciones">
+    <li>{{ modalidad() }}</li>
+    <li>{{ contrato() }}</li>
+  </ul>
+</article>

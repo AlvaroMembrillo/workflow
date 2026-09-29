@@ -1,0 +1,161 @@
+@if (oferta.hasValue()) {
+  @let o = oferta.value();
+  <article class="detalle">
+    <header class="cabecera-oferta">
+      <nav class="migas" aria-label="Estás en">
+        <a routerLink="/">Ofertas</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ o.titulo }}</span>
+      </nav>
+      <h1>{{ o.titulo }}</h1>
+      <p class="empresa">
+        <a [routerLink]="['/empresas', o.empresa.id]">{{ o.empresa.nombre }}</a>
+      </p>
+
+      <dl class="hechos">
+        <div>
+          <dt>Salario</dt>
+          <dd>
+            <app-salario [minimo]="o.salarioMinimo" [maximo]="o.salarioMaximo" [completo]="true" />
+          </dd>
+        </div>
+        <div>
+          <dt>Modalidad</dt>
+          <dd>{{ textoModalidad[o.modalidad] }}</dd>
+        </div>
+        <div>
+          <dt>Contrato</dt>
+          <dd>{{ textoContrato[o.tipoContrato] }}</dd>
+        </div>
+        <div>
+          <dt>Ubicación</dt>
+          <dd>{{ o.ubicacion }}</dd>
+        </div>
+        <div>
+          <dt>Publicada</dt>
+          <dd><app-fecha [iso]="o.fechaCreacion" formato="corta" /></dd>
+        </div>
+        <div>
+          <dt>Actualizada</dt>
+          <dd><app-fecha [iso]="o.fechaActualizacion" /></dd>
+        </div>
+      </dl>
+    </header>
+
+    <aside class="panel tarjeta" aria-label="Inscripción">
+      <app-salario [minimo]="o.salarioMinimo" [maximo]="o.salarioMaximo" />
+
+      @if (miCandidatura(); as candidatura) {
+        <p class="aviso aviso-ok" role="status">
+          <svg lucideCircleCheck [size]="18"></svg>
+          <span>
+            Te inscribiste el <app-fecha [iso]="candidatura.fechaCreacion" formato="corta" />.
+            Estado: <strong>{{ textoEstado[candidatura.estado] }}</strong
+            >.
+          </span>
+        </p>
+        <a routerLink="/mis-candidaturas" class="btn btn-secundario btn-bloque"
+          >Ver mis candidaturas</a
+        >
+      } @else if (o.estado === 'CERRADA') {
+        <p class="aviso aviso-cerrada">
+          <svg lucideLock [size]="18"></svg>
+          Esta oferta ya no admite candidaturas.
+        </p>
+      } @else {
+        @switch (sesion.rol()) {
+          @case (null) {
+            <a
+              class="btn btn-primario btn-bloque"
+              routerLink="/registro"
+              [queryParams]="{ volver: rutaActual() }"
+              >Inscribirme</a
+            >
+            <p class="ayuda">
+              Necesitas una cuenta de candidato. ¿Ya tienes una?
+              <a routerLink="/entrar" [queryParams]="{ volver: rutaActual() }">Entra</a>
+            </p>
+          }
+          @case ('CANDIDATO') {
+            @if (comprobandoCandidatura()) {
+              <p class="ayuda" role="status">Comprobando si ya te has inscrito…</p>
+            } @else {
+              <form class="formulario" (submit)="inscribirse($event)">
+                @if (error(); as mensajeError) {
+                  <p class="aviso aviso-error" role="alert">
+                    <svg lucideCircleAlert [size]="18"></svg>
+                    {{ mensajeError }}
+                  </p>
+                }
+                @if (mostrarCarta()) {
+                  <div class="campo">
+                    <label for="carta">Carta de presentación (opcional)</label>
+                    <textarea
+                      id="carta"
+                      name="carta"
+                      class="input"
+                      rows="6"
+                      [maxlength]="longitudMaximaCarta"
+                      aria-describedby="carta-ayuda"
+                      [(ngModel)]="carta"
+                    ></textarea>
+                    <p id="carta-ayuda" class="ayuda">
+                      {{ carta().length }} de {{ longitudMaximaCarta }} caracteres
+                    </p>
+                  </div>
+                } @else {
+                  <button type="button" class="enlace-carta" (click)="mostrarCarta.set(true)">
+                    <svg lucideFileText [size]="16"></svg>
+                    Añadir carta de presentación (opcional)
+                  </button>
+                }
+                <button type="submit" class="btn btn-primario btn-bloque" [disabled]="enviando()">
+                  {{ enviando() ? 'Enviando…' : 'Inscribirme' }}
+                </button>
+                <p class="ayuda">
+                  La empresa verá tu nombre, tu email y la carta si la añades. Podrás seguir el
+                  estado en "Mis candidaturas".
+                </p>
+              </form>
+            }
+          }
+          @default {
+            <p class="ayuda">
+              Estás viendo la oferta con una cuenta de empresa. Para inscribirte necesitas una
+              cuenta de candidato.
+            </p>
+          }
+        }
+      }
+    </aside>
+
+    <section class="descripcion" aria-labelledby="titulo-descripcion">
+      <h2 id="titulo-descripcion">Descripción</h2>
+      <p class="texto">{{ o.descripcion }}</p>
+    </section>
+  </article>
+} @else if (noEncontrada()) {
+  <app-estado-vacio
+    titulo="Esta oferta no existe"
+    texto="Puede que el enlace esté mal copiado o que la empresa la haya retirado."
+  >
+    <a routerLink="/" class="btn btn-primario btn-pequeno">Ver ofertas</a>
+  </app-estado-vacio>
+} @else if (oferta.error()) {
+  <div class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    <div class="aviso-cuerpo">
+      <p>No hemos podido cargar la oferta. Comprueba tu conexión.</p>
+      <button type="button" class="btn btn-secundario btn-pequeno" (click)="oferta.reload()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="cargando" aria-busy="true" role="status">
+    <span class="solo-lectores">Cargando la oferta</span>
+    <i style="width: 55%; height: 2rem"></i>
+    <i style="width: 25%"></i>
+    <i style="width: 80%; height: 6rem"></i>
+  </div>
+}
