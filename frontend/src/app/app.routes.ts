@@ -44,11 +44,10 @@ export const routes: Routes = [
     title: 'Mis candidaturas',
     canActivate: [requiereRol('CANDIDATO')],
     runGuardsAndResolvers: 'always',
-    loadComponent: enConstruccion,
-    data: {
-      titulo: 'Mis candidaturas',
-      descripcion: 'Aquí verás tus candidaturas y en qué punto está cada una.',
-    },
+    loadComponent: () =>
+      import('./paginas/candidaturas/mis-candidaturas/mis-candidaturas').then(
+        (m) => m.MisCandidaturas,
+      ),
   },
   {
     path: 'empresa',

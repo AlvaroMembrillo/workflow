@@ -14,4 +14,9 @@ export class CandidaturasApi {
       cartaPresentacion,
     });
   }
+
+  /** El candidato retira su candidatura mientras la empresa no haya decidido. */
+  retirar(candidaturaId: string): Observable<MiCandidatura> {
+    return this.http.post<MiCandidatura>(`/api/candidaturas/${candidaturaId}/retirada`, {});
+  }
 }

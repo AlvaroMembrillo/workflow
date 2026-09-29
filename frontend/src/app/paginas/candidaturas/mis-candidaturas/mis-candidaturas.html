@@ -1,0 +1,104 @@
+<header class="encabezado">
+  <h1>Mis candidaturas</h1>
+  <p>Aquí ves en qué punto está cada una. Cuando la empresa la mueve, la fecha se actualiza.</p>
+</header>
+
+<div class="mensajes" aria-live="polite">
+  @if (aviso(); as textoAviso) {
+    <p class="aviso aviso-ok">{{ textoAviso }}</p>
+  }
+  @if (error(); as textoError) {
+    <p class="aviso aviso-error" role="alert">
+      <svg lucideCircleAlert [size]="18"></svg>
+      {{ textoError }}
+    </p>
+  }
+</div>
+
+@if (candidaturas.hasValue()) {
+  @if (candidaturas.value().content.length) {
+    <ol class="lista" [attr.aria-busy]="candidaturas.isLoading()">
+      @for (candidatura of candidaturas.value().content; track candidatura.id) {
+        <li class="tarjeta candidatura">
+          <div class="cabecera">
+            <div>
+              <h2>
+                <a [routerLink]="['/ofertas', candidatura.oferta.id]">{{
+                  candidatura.oferta.titulo
+                }}</a>
+              </h2>
+              <p class="meta">
+                <a [routerLink]="['/empresas', candidatura.oferta.empresa.id]">{{
+                  candidatura.oferta.empresa.nombre
+                }}</a>
+                · actualizada <app-fecha [iso]="candidatura.fechaActualizacion" />
+              </p>
+            </div>
+            <app-estado-candidatura [estado]="candidatura.estado" />
+          </div>
+
+          <app-progreso-candidatura [candidatura]="candidatura" />
+
+          @if (candidatura.oferta.estado === 'CERRADA' && sePuedeRetirar(candidatura)) {
+            <p class="nota">
+              <svg lucideInfo [size]="16"></svg>
+              La empresa ha cerrado la oferta, pero todavía puede responderte.
+            </p>
+          }
+
+          @if (candidatura.cartaPresentacion || sePuedeRetirar(candidatura)) {
+            <div class="pie">
+              @if (candidatura.cartaPresentacion) {
+                <details>
+                  <summary>Tu carta de presentación</summary>
+                  <p class="carta">{{ candidatura.cartaPresentacion }}</p>
+                </details>
+              }
+              @if (sePuedeRetirar(candidatura)) {
+                <button
+                  type="button"
+                  class="btn btn-fantasma btn-pequeno retirar"
+                  (click)="pedirRetirada(candidatura)"
+                >
+                  Retirar candidatura
+                </button>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ol>
+    <app-paginacion [pagina]="pagina()" [totalPaginas]="candidaturas.value().page.totalPages" />
+  } @else {
+    <app-estado-vacio
+      titulo="Todavía no te has inscrito en ninguna oferta"
+      texto="Cuando te inscribas, aquí verás en qué punto está cada candidatura."
+    >
+      <a routerLink="/" class="btn btn-primario btn-pequeno">Buscar ofertas</a>
+    </app-estado-vacio>
+  }
+} @else if (candidaturas.error()) {
+  <div class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    <div class="aviso-cuerpo">
+      <p>No hemos podido cargar tus candidaturas. Comprueba tu conexión.</p>
+      <button type="button" class="btn btn-secundario btn-pequeno" (click)="candidaturas.reload()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+} @else {
+  <p class="ayuda" role="status">Cargando tus candidaturas…</p>
+}
+
+<app-dialogo-confirmacion
+  id="retirar"
+  [abierto]="aRetirar() !== null"
+  titulo="¿Retirar tu candidatura?"
+  [texto]="textoConfirmacion()"
+  textoConfirmar="Retirar"
+  [peligro]="true"
+  [ocupado]="retirando()"
+  (confirmar)="retirar()"
+  (cancelar)="aRetirar.set(null)"
+/>

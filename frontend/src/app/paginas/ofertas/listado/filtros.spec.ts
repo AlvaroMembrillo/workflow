@@ -1,4 +1,5 @@
-import { hayFiltros, leerModalidad, leerPagina, leerTipoContrato, parametrosApi } from './filtros';
+import { leerPagina } from '../../../compartido/paginacion/leer-pagina';
+import { hayFiltros, leerModalidad, leerTipoContrato, parametrosApi } from './filtros';
 
 describe('filtros del buscador', () => {
   it('ignora los valores de la URL que no son válidos', () => {
