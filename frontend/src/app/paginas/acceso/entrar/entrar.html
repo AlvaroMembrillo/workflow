@@ -1,0 +1,78 @@
+<div class="caja">
+  <header>
+    <h1>Entra en tu cuenta</h1>
+    <p>Para inscribirte en ofertas o gestionar las de tu empresa.</p>
+  </header>
+
+  @if (caducada()) {
+    <p class="aviso aviso-info" role="status">
+      <svg lucideInfo [size]="18"></svg>
+      Tu sesión ha caducado. Vuelve a entrar para continuar donde lo dejaste.
+    </p>
+  }
+
+  <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+    @if (error(); as mensajeError) {
+      <p class="aviso aviso-error" role="alert">
+        <svg lucideCircleAlert [size]="18"></svg>
+        {{ mensajeError }}
+      </p>
+    }
+
+    <div class="campo">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        class="input"
+        type="email"
+        autocomplete="email"
+        formControlName="email"
+        [attr.aria-invalid]="tieneError('email')"
+        [attr.aria-describedby]="tieneError('email') ? 'email-error' : null"
+      />
+      @if (tieneError('email')) {
+        <p id="email-error" class="error-campo">{{ mensaje('email') }}</p>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="password">Contraseña</label>
+      <div class="con-accion">
+        <input
+          id="password"
+          class="input"
+          [type]="verPassword() ? 'text' : 'password'"
+          autocomplete="current-password"
+          formControlName="password"
+          [attr.aria-invalid]="tieneError('password')"
+          [attr.aria-describedby]="tieneError('password') ? 'password-error' : null"
+        />
+        <button
+          type="button"
+          class="accion-campo"
+          [attr.aria-pressed]="verPassword()"
+          aria-label="Mostrar contraseña"
+          (click)="verPassword.set(!verPassword())"
+        >
+          @if (verPassword()) {
+            <svg lucideEyeOff [size]="18"></svg>
+          } @else {
+            <svg lucideEye [size]="18"></svg>
+          }
+        </button>
+      </div>
+      @if (tieneError('password')) {
+        <p id="password-error" class="error-campo">{{ mensaje('password') }}</p>
+      }
+    </div>
+
+    <button type="submit" class="btn btn-primario btn-bloque" [disabled]="enviando()">
+      {{ enviando() ? 'Entrando…' : 'Entrar' }}
+    </button>
+  </form>
+
+  <p class="alternativa">
+    ¿No tienes cuenta?
+    <a routerLink="/registro" [queryParams]="volver() ? { volver: volver() } : {}">Crea una</a>
+  </p>
+</div>

@@ -1,0 +1,30 @@
+import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, skip } from 'rxjs';
+
+import { Cabecera } from './layout/cabecera/cabecera';
+import { Pie } from './layout/pie/pie';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, Cabecera, Pie],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class App {
+  private readonly contenido = viewChild.required<ElementRef<HTMLElement>>('contenido');
+
+  constructor() {
+    // Al cambiar de página, el foco va al contenido nuevo para que el lector de pantalla empiece por él
+    // en lugar de quedarse en el enlace que se pulsó. La primera carga no mueve el foco.
+    inject(Router)
+      .events.pipe(
+        filter((evento) => evento instanceof NavigationEnd),
+        skip(1),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.contenido().nativeElement.focus({ preventScroll: true }));
+  }
+}

@@ -1,0 +1,58 @@
+<header class="cabecera">
+  <div class="contenedor">
+    <a routerLink="/" class="marca">
+      <app-logo />
+      <span>workflow</span>
+      <span class="solo-lectores">: ir a las ofertas</span>
+    </a>
+
+    <nav aria-label="Principal">
+      <ul>
+        <li>
+          <a
+            routerLink="/"
+            routerLinkActive="activo"
+            [routerLinkActiveOptions]="{ exact: true }"
+            ariaCurrentWhenActive="page"
+            >Ofertas</a
+          >
+        </li>
+        @switch (sesion.rol()) {
+          @case ('CANDIDATO') {
+            <li>
+              <a
+                routerLink="/mis-candidaturas"
+                routerLinkActive="activo"
+                ariaCurrentWhenActive="page"
+                >Mis candidaturas</a
+              >
+            </li>
+          }
+          @case ('EMPRESA') {
+            <li>
+              <a routerLink="/empresa" routerLinkActive="activo" ariaCurrentWhenActive="page"
+                >Panel de empresa</a
+              >
+            </li>
+          }
+          @default {
+            <li><a routerLink="/registro" [queryParams]="{ tipo: 'empresa' }">Para empresas</a></li>
+          }
+        }
+      </ul>
+    </nav>
+
+    <div class="cuenta">
+      @if (sesion.usuario(); as usuario) {
+        <span class="email" [title]="usuario.email">{{ usuario.email }}</span>
+        <button type="button" class="btn btn-fantasma btn-pequeno" (click)="salir()">
+          <svg lucideLogOut [size]="16"></svg>
+          Salir
+        </button>
+      } @else {
+        <a routerLink="/entrar" class="btn btn-fantasma btn-pequeno">Entrar</a>
+        <a routerLink="/registro" class="btn btn-primario btn-pequeno">Crear cuenta</a>
+      }
+    </div>
+  </div>
+</header>

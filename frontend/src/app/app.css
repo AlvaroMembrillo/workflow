@@ -1,0 +1,31 @@
+:host {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+}
+
+main {
+  width: 100%;
+  max-width: var(--ancho-contenido);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4) var(--space-12);
+}
+
+main:focus {
+  outline: none;
+}
+
+.saltar {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: 10;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border-radius: var(--r-control);
+  box-shadow: var(--shadow);
+}
+
+.saltar:focus {
+  top: var(--space-2);
+}

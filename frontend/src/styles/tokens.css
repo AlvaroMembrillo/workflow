@@ -1,0 +1,88 @@
+/*
+ * Variables del sistema de diseño (ver la guía de diseño de Workflow).
+ * Los componentes usan siempre estas variables; nunca colores sueltos.
+ */
+:root {
+  --paper: #f7f6f9;
+  --surface: #ffffff;
+  --sunken: #efedf3;
+  --ink: #1d1a24;
+  --muted: #625c6e;
+  --line: #e2dee8;
+
+  --brand: #6b2d5c;
+  --brand-hover: #56234a;
+  --brand-ink: #ffffff;
+  --brand-soft: #f4e9f1;
+  --brand-line: #e3c9dc;
+
+  /* Estados: pendiente, en revisión, correcto (aceptada, abierta) y negativo (rechazada, error) */
+  --pend-fg: #4e5768;
+  --pend-bg: #eceef3;
+  --rev-fg: #7a4f00;
+  --rev-bg: #fff0cc;
+  --ok-fg: #1b6536;
+  --ok-bg: #e0f2e5;
+  --no-fg: #9a2a2a;
+  --no-bg: #fbe7e7;
+
+  --shadow: 0 1px 2px rgb(29 26 36 / 0.06), 0 6px 20px rgb(29 26 36 / 0.07);
+  --shadow-lg: 0 12px 40px rgb(29 26 36 / 0.18);
+
+  --f-display:
+    'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --f-body:
+    'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui,
+    -apple-system, 'Segoe UI', sans-serif;
+  --f-mono:
+    'Atkinson Hyperlegible Mono Variable', 'Atkinson Hyperlegible Mono', ui-monospace, Menlo,
+    monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --r-control: 8px;
+  --r-card: 12px;
+  --r-pill: 999px;
+
+  --ancho-contenido: 75rem;
+  --duracion: 150ms;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #141218;
+    --surface: #1c1921;
+    --sunken: #231f29;
+    --ink: #eeeaf3;
+    --muted: #a9a2b5;
+    --line: #322d3a;
+
+    --brand: #d493c3;
+    --brand-hover: #e2aed5;
+    --brand-ink: #1d1a24;
+    --brand-soft: #36202f;
+    --brand-line: #5a3450;
+
+    --pend-fg: #b9c0cd;
+    --pend-bg: #262a33;
+    --rev-fg: #f2c66b;
+    --rev-bg: #3a2e12;
+    --ok-fg: #86d6a0;
+    --ok-bg: #15301f;
+    --no-fg: #f2a0a0;
+    --no-bg: #3b1c1c;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 20px rgb(0 0 0 / 0.35);
+    --shadow-lg: 0 12px 40px rgb(0 0 0 / 0.55);
+
+    color-scheme: dark;
+  }
+}

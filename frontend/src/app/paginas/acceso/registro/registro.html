@@ -1,0 +1,110 @@
+<div class="caja">
+  <header>
+    <h1>Crea tu cuenta</h1>
+    <p>Es gratis y solo te pedimos lo necesario.</p>
+  </header>
+
+  <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+    @if (error(); as mensajeError) {
+      <p class="aviso aviso-error" role="alert">
+        <svg lucideCircleAlert [size]="18"></svg>
+        {{ mensajeError }}
+      </p>
+    }
+
+    <fieldset class="tipos">
+      <legend class="etiqueta">¿Qué quieres hacer?</legend>
+      <label class="tipo">
+        <input type="radio" formControlName="rol" value="CANDIDATO" />
+        <span class="tipo-titulo">Busco empleo</span>
+        <span class="tipo-texto">Inscríbete en ofertas y sigue tus candidaturas</span>
+      </label>
+      <label class="tipo">
+        <input type="radio" formControlName="rol" value="EMPRESA" />
+        <span class="tipo-titulo">Quiero contratar</span>
+        <span class="tipo-texto">Publica ofertas y gestiona las candidaturas</span>
+      </label>
+    </fieldset>
+
+    <div class="campo">
+      <label for="nombre">{{ esEmpresa() ? 'Nombre de la empresa' : 'Nombre' }}</label>
+      <input
+        id="nombre"
+        class="input"
+        type="text"
+        [attr.autocomplete]="esEmpresa() ? 'organization' : 'name'"
+        formControlName="nombre"
+        [attr.aria-invalid]="tieneError('nombre')"
+        [attr.aria-describedby]="tieneError('nombre') ? 'nombre-error' : null"
+      />
+      @if (tieneError('nombre')) {
+        <p id="nombre-error" class="error-campo">{{ mensaje('nombre') }}</p>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        class="input"
+        type="email"
+        autocomplete="email"
+        formControlName="email"
+        [attr.aria-invalid]="tieneError('email')"
+        [attr.aria-describedby]="tieneError('email') ? 'email-error' : null"
+      />
+      @if (tieneError('email')) {
+        <p id="email-error" class="error-campo">
+          {{ mensaje('email') }}
+          @if (emailDuplicado()) {
+            <a routerLink="/entrar" [queryParams]="volver() ? { volver: volver() } : {}"
+              >Entra con ella</a
+            >
+          }
+        </p>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="password">Contraseña</label>
+      <div class="con-accion">
+        <input
+          id="password"
+          class="input"
+          [type]="verPassword() ? 'text' : 'password'"
+          autocomplete="new-password"
+          formControlName="password"
+          [attr.aria-invalid]="tieneError('password')"
+          aria-describedby="password-ayuda"
+        />
+        <button
+          type="button"
+          class="accion-campo"
+          [attr.aria-pressed]="verPassword()"
+          aria-label="Mostrar contraseña"
+          (click)="verPassword.set(!verPassword())"
+        >
+          @if (verPassword()) {
+            <svg lucideEyeOff [size]="18"></svg>
+          } @else {
+            <svg lucideEye [size]="18"></svg>
+          }
+        </button>
+      </div>
+      @if (tieneError('password')) {
+        <p id="password-ayuda" class="error-campo">{{ mensaje('password') }}</p>
+      } @else {
+        <p id="password-ayuda" class="ayuda">Mínimo 8 caracteres.</p>
+      }
+    </div>
+
+    <button type="submit" class="btn btn-primario btn-bloque" [disabled]="enviando()">
+      {{ enviando() ? 'Creando la cuenta…' : 'Crear cuenta' }}
+    </button>
+  </form>
+
+  <p class="alternativa">
+    ¿Ya tienes cuenta?
+    <a routerLink="/entrar" [queryParams]="volver() ? { volver: volver() } : {}">Entra</a>
+  </p>
+</div>
