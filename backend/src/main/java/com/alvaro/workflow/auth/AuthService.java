@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alvaro.workflow.auth.dto.LoginRequest;
 import com.alvaro.workflow.auth.dto.RegistroRequest;
 import com.alvaro.workflow.auth.dto.TokenResponse;
+import com.alvaro.workflow.empresa.EmpresaService;
 import com.alvaro.workflow.usuario.Rol;
 import com.alvaro.workflow.usuario.Usuario;
 import com.alvaro.workflow.usuario.UsuarioRepository;
@@ -26,6 +27,7 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final AuthenticationManager authenticationManager;
 	private final TokenService tokenService;
+	private final EmpresaService empresaService;
 
 	@Transactional
 	public TokenResponse registrar(RegistroRequest request) {
@@ -41,6 +43,9 @@ public class AuthService {
 
 		Usuario usuario = usuarios.save(new Usuario(
 				email, passwordEncoder.encode(request.password()), request.nombre().strip(), request.rol()));
+		if (usuario.getRol() == Rol.EMPRESA) {
+			empresaService.crearPerfil(usuario);
+		}
 		return tokenService.generar(usuario);
 	}
 

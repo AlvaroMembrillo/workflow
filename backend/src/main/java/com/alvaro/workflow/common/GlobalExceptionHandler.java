@@ -3,11 +3,13 @@ package com.alvaro.workflow.common;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,24 +17,36 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.alvaro.workflow.auth.EmailYaRegistradoException;
-import com.alvaro.workflow.auth.RolNoPermitidoException;
-import com.alvaro.workflow.usuario.UsuarioNoEncontradoException;
-
 /**
  * Traduce las excepciones a respuestas de error con formato Problem Details (RFC 9457).
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-	@ExceptionHandler(EmailYaRegistradoException.class)
-	ProblemDetail emailYaRegistrado(EmailYaRegistradoException ex) {
-		return problema(HttpStatus.CONFLICT, "Email ya registrado", ex.getMessage());
+	@ExceptionHandler(RecursoNoEncontradoException.class)
+	ProblemDetail recursoNoEncontrado(RecursoNoEncontradoException ex) {
+		return problema(HttpStatus.NOT_FOUND, ex);
 	}
 
-	@ExceptionHandler(RolNoPermitidoException.class)
-	ProblemDetail rolNoPermitido(RolNoPermitidoException ex) {
-		return problema(HttpStatus.BAD_REQUEST, "Rol no permitido", ex.getMessage());
+	@ExceptionHandler(ConflictoException.class)
+	ProblemDetail conflicto(ConflictoException ex) {
+		return problema(HttpStatus.CONFLICT, ex);
+	}
+
+	@ExceptionHandler(PeticionNoValidaException.class)
+	ProblemDetail peticionNoValida(PeticionNoValidaException ex) {
+		return problema(HttpStatus.BAD_REQUEST, ex);
+	}
+
+	@ExceptionHandler(AccesoDenegadoException.class)
+	ProblemDetail accesoDenegado(AccesoDenegadoException ex) {
+		return problema(HttpStatus.FORBIDDEN, ex);
+	}
+
+	/** Un {@code @PreAuthorize} ha rechazado la petición: el usuario no tiene el rol necesario. */
+	@ExceptionHandler(AuthorizationDeniedException.class)
+	ProblemDetail rolInsuficiente() {
+		return problema(HttpStatus.FORBIDDEN, "Acceso denegado", "Tu tipo de cuenta no puede realizar esta acción");
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
@@ -41,9 +55,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return problema(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas", "El email o la contraseña no son correctos");
 	}
 
-	@ExceptionHandler(UsuarioNoEncontradoException.class)
-	ProblemDetail usuarioNoEncontrado(UsuarioNoEncontradoException ex) {
-		return problema(HttpStatus.NOT_FOUND, "Usuario no encontrado", ex.getMessage());
+	/** Se pide ordenar por un campo que no existe, por ejemplo {@code ?sort=noExiste}. */
+	@ExceptionHandler(PropertyReferenceException.class)
+	ProblemDetail ordenNoValido(PropertyReferenceException ex) {
+		return problema(HttpStatus.BAD_REQUEST, "Orden no válido", "No se puede ordenar por '" + ex.getPropertyName() + "'");
 	}
 
 	/** Añade a la respuesta el error de cada campo, para que el frontend pueda mostrarlo junto al campo. */
@@ -57,6 +72,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		ProblemDetail problema = problema(HttpStatus.BAD_REQUEST, "Datos no válidos", "La petición contiene campos no válidos");
 		problema.setProperty("errores", errores);
 		return handleExceptionInternal(ex, problema, headers, status, request);
+	}
+
+	private static ProblemDetail problema(HttpStatus estado, ErrorDeNegocioException ex) {
+		return problema(estado, ex.getTitulo(), ex.getMessage());
 	}
 
 	private static ProblemDetail problema(HttpStatus estado, String titulo, String detalle) {
