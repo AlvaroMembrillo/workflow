@@ -1,0 +1,174 @@
+/*
+ * Piezas básicas de la interfaz, compartidas por todas las pantallas.
+ * Los componentes de Angular las usan como clases para no repetir estilos.
+ */
+
+/* ---------- Botones ---------- */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border-radius: var(--r-control);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--duracion) ease-out,
+    border-color var(--duracion) ease-out;
+}
+
+.btn-primario {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+
+.btn-primario:hover {
+  background: var(--brand-hover);
+  color: var(--brand-ink);
+}
+
+.btn-secundario {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.btn-secundario:hover {
+  border-color: var(--muted);
+  color: var(--ink);
+}
+
+.btn-fantasma {
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn-fantasma:hover {
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+.btn-peligro {
+  background: var(--no-fg);
+  color: var(--surface);
+}
+
+.btn-pequeno {
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  font-size: 0.875rem;
+}
+
+.btn-bloque {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- Formularios ---------- */
+.formulario {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.campo {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.campo > label,
+.campo > .etiqueta {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.input {
+  font: inherit;
+  font-size: 1rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  color: var(--ink);
+  transition:
+    border-color var(--duracion) ease-out,
+    box-shadow var(--duracion) ease-out;
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+.input:hover {
+  border-color: var(--muted);
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--no-fg);
+}
+
+.ayuda {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.error-campo {
+  font-size: 0.875rem;
+  color: var(--no-fg);
+}
+
+/* ---------- Avisos dentro de la página ---------- */
+.aviso {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.aviso svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.aviso-error {
+  background: var(--no-bg);
+  color: var(--no-fg);
+}
+
+.aviso-info {
+  background: var(--brand-soft);
+  color: var(--ink);
+}
+
+.aviso-ok {
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+}
+
+/* ---------- Tarjeta genérica ---------- */
+.tarjeta {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}

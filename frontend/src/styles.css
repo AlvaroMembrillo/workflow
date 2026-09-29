@@ -1,0 +1,8 @@
+/* Fuentes servidas desde la propia aplicación: no se hace ninguna petición a terceros */
+@import '@fontsource-variable/atkinson-hyperlegible-next';
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/atkinson-hyperlegible-mono';
+
+@import './styles/tokens.css';
+@import './styles/base.css';
+@import './styles/componentes.css';

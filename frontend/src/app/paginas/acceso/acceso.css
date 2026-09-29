@@ -1,0 +1,54 @@
+/* Estilos comunes de las pantallas de acceso y registro */
+:host {
+  display: grid;
+  justify-items: center;
+  padding-block: var(--space-6);
+}
+
+.caja {
+  width: 100%;
+  max-width: 28rem;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.caja > header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.caja > header p {
+  color: var(--muted);
+}
+
+.con-accion {
+  position: relative;
+}
+
+.con-accion .input {
+  padding-right: 3rem;
+}
+
+.accion-campo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 2.75rem;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  border-radius: 0 var(--r-control) var(--r-control) 0;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.accion-campo:hover {
+  color: var(--ink);
+}
+
+.alternativa {
+  font-size: 0.95rem;
+  color: var(--muted);
+}

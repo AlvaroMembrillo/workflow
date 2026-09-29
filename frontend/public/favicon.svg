@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .fondo { fill: #6b2d5c; }
+    .paso { fill: #e3c9dc; }
+    .final { fill: #ffffff; }
+    line { stroke: #e3c9dc; stroke-width: 2; }
+  </style>
+  <rect class="fondo" width="32" height="32" rx="7" />
+  <line x1="7" y1="16" x2="25" y2="16" />
+  <circle class="paso" cx="7" cy="16" r="3" />
+  <circle class="paso" cx="16" cy="16" r="3" />
+  <circle class="final" cx="25" cy="16" r="4" />
+</svg>

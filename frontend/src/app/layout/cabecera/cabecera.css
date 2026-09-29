@@ -1,0 +1,96 @@
+.cabecera {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.contenedor {
+  max-width: var(--ancho-contenido);
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'marca nav cuenta';
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+}
+
+.marca {
+  grid-area: marca;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.marca:hover {
+  color: var(--ink);
+}
+
+nav {
+  grid-area: nav;
+  min-width: 0;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-6);
+}
+
+nav a {
+  display: inline-block;
+  padding-block: var(--space-2);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+nav a:hover {
+  color: var(--ink);
+}
+
+nav a.activo {
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--brand);
+}
+
+.cuenta {
+  grid-area: cuenta;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.email {
+  font-size: 0.875rem;
+  color: var(--muted);
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* En móvil la navegación pasa a su propia fila, debajo del logo y la cuenta */
+@media (max-width: 599px) {
+  .contenedor {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'marca cuenta'
+      'nav nav';
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .email {
+    display: none;
+  }
+}
