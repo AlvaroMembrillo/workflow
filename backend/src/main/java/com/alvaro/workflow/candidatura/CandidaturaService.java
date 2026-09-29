@@ -1,6 +1,12 @@
 package com.alvaro.workflow.candidatura;
 
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alvaro.workflow.candidatura.dto.CandidaturaRecibidaResponse;
 import com.alvaro.workflow.candidatura.dto.CandidaturaRequest;
 import com.alvaro.workflow.candidatura.dto.MiCandidaturaResponse;
+import com.alvaro.workflow.candidatura.dto.ResumenCandidaturas;
 import com.alvaro.workflow.common.AccesoDenegadoException;
+import com.alvaro.workflow.common.PeticionNoValidaException;
+import com.alvaro.workflow.common.RecursoNoEncontradoException;
 import com.alvaro.workflow.oferta.Oferta;
 import com.alvaro.workflow.oferta.OfertaService;
 import com.alvaro.workflow.usuario.Usuario;
@@ -49,23 +58,72 @@ public class CandidaturaService {
 		return candidaturas.findByCandidatoId(candidatoId, pageable).map(candidaturaMapper::toMiCandidatura);
 	}
 
-	/** Candidaturas de una oferta; solo puede verlas la empresa que la publicó. */
+	/** La candidatura del candidato en una oferta, para saber en la ficha de la oferta si ya se inscribió. */
 	@Transactional(readOnly = true)
-	public Page<CandidaturaRecibidaResponse> buscarDeLaOferta(UUID usuarioEmpresaId, UUID ofertaId, Pageable pageable) {
+	public MiCandidaturaResponse buscarDelCandidatoEnOferta(UUID candidatoId, UUID ofertaId) {
+		return candidaturas.findByOfertaIdAndCandidatoId(ofertaId, candidatoId)
+				.map(candidaturaMapper::toMiCandidatura)
+				.orElseThrow(() -> new RecursoNoEncontradoException("Sin candidatura",
+						"No te has inscrito en esta oferta"));
+	}
+
+	/** El candidato retira su candidatura mientras la empresa no haya decidido. */
+	@Transactional
+	public MiCandidaturaResponse retirar(UUID candidatoId, UUID candidaturaId) {
+		Candidatura candidatura = candidatura(candidaturaId);
+		if (!candidatura.esDe(candidatoId)) {
+			throw new AccesoDenegadoException("La candidatura es de otra persona");
+		}
+		candidatura.cambiarEstado(EstadoCandidatura.RETIRADA);
+		return candidaturaMapper.toMiCandidatura(candidaturas.saveAndFlush(candidatura));
+	}
+
+	/**
+	 * Candidaturas de una oferta; solo puede verlas la empresa que la publicó.
+	 *
+	 * @param estados si no está vacío, solo se devuelven las candidaturas en esos estados
+	 */
+	@Transactional(readOnly = true)
+	public Page<CandidaturaRecibidaResponse> buscarDeLaOferta(UUID usuarioEmpresaId, UUID ofertaId,
+			Collection<EstadoCandidatura> estados, Pageable pageable) {
 		ofertaService.ofertaDeLaEmpresaDelUsuario(usuarioEmpresaId, ofertaId);
-		return candidaturas.findByOfertaId(ofertaId, pageable).map(candidaturaMapper::toRecibida);
+		Page<Candidatura> pagina = estados == null || estados.isEmpty()
+				? candidaturas.findByOfertaId(ofertaId, pageable)
+				: candidaturas.findByOfertaIdAndEstadoIn(ofertaId, estados, pageable);
+		return pagina.map(candidaturaMapper::toRecibida);
 	}
 
 	@Transactional
 	public CandidaturaRecibidaResponse cambiarEstado(UUID usuarioEmpresaId, UUID candidaturaId, EstadoCandidatura estado) {
-		Candidatura candidatura = candidaturas.findById(candidaturaId)
-				.orElseThrow(() -> new CandidaturaNoEncontradaException(candidaturaId));
+		if (estado == EstadoCandidatura.RETIRADA) {
+			throw new PeticionNoValidaException("Estado no permitido", "Solo el candidato puede retirar su candidatura");
+		}
+		Candidatura candidatura = candidatura(candidaturaId);
 		if (!candidatura.getOferta().esDeLaEmpresaDe(usuarioEmpresaId)) {
 			throw new AccesoDenegadoException("La candidatura es de una oferta de otra empresa");
 		}
 
 		candidatura.cambiarEstado(estado);
 		return candidaturaMapper.toRecibida(candidaturas.saveAndFlush(candidatura));
+	}
+
+	/** Resumen de candidaturas por estado de cada oferta, calculado con una sola consulta. */
+	@Transactional(readOnly = true)
+	public Map<UUID, ResumenCandidaturas> resumenPorOferta(Collection<UUID> ofertaIds) {
+		if (ofertaIds.isEmpty()) {
+			return Map.of();
+		}
+		Map<UUID, Map<EstadoCandidatura, Long>> porOferta = new HashMap<>();
+		for (CandidaturaRepository.RecuentoPorEstado fila : candidaturas.contarPorEstado(ofertaIds)) {
+			porOferta.computeIfAbsent(fila.getOfertaId(), id -> new EnumMap<>(EstadoCandidatura.class))
+					.put(fila.getEstado(), fila.getTotal());
+		}
+		return ofertaIds.stream().distinct().collect(Collectors.toMap(Function.identity(),
+				id -> ResumenCandidaturas.de(porOferta.getOrDefault(id, Map.of()))));
+	}
+
+	private Candidatura candidatura(UUID id) {
+		return candidaturas.findById(id).orElseThrow(() -> new CandidaturaNoEncontradaException(id));
 	}
 
 }

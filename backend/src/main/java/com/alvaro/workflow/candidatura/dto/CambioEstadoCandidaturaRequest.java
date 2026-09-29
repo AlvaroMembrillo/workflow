@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record CambioEstadoCandidaturaRequest(
 		@NotNull(message = "El estado es obligatorio")
-		@Schema(allowableValues = { "EN_REVISION", "ACEPTADA", "RECHAZADA" })
+		@Schema(allowableValues = { "EN_REVISION", "ACEPTADA", "RECHAZADA" },
+				description = "RETIRADA solo lo puede aplicar el candidato, con POST /api/candidaturas/{id}/retirada")
 		EstadoCandidatura estado) {
 }

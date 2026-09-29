@@ -81,8 +81,7 @@ public class OfertaService {
 	}
 
 	private static void validarSalario(OfertaRequest request) {
-		if (request.salarioMinimo() != null && request.salarioMaximo() != null
-				&& request.salarioMinimo() > request.salarioMaximo()) {
+		if (request.salarioMinimo() > request.salarioMaximo()) {
 			throw new PeticionNoValidaException("Rango salarial no válido",
 					"El salario mínimo no puede ser mayor que el máximo");
 		}

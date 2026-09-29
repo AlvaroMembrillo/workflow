@@ -35,18 +35,23 @@ gestionan las candidaturas que reciben. La documentación completa está en Swag
 
 | Endpoint | Acceso | Descripción |
 |---|---|---|
-| `GET /api/ofertas` | Público | Ofertas abiertas, paginadas, con filtros `texto`, `ubicacion`, `modalidad` y `tipoContrato` |
+| `GET /api/ofertas` | Público | Ofertas abiertas, paginadas, con filtros `texto`, `ubicacion`, `modalidad`, `tipoContrato` y `empresaId` |
 | `GET /api/ofertas/{id}` | Público | Detalle de una oferta |
-| `POST /api/ofertas` | Empresa | Publica una oferta |
+| `POST /api/ofertas` | Empresa | Publica una oferta (el rango salarial es obligatorio) |
 | `PUT /api/ofertas/{id}` | Empresa propietaria | Modifica una oferta |
 | `PATCH /api/ofertas/{id}/estado` | Empresa propietaria | Abre o cierra una oferta |
 | `GET /api/empresas/{id}` | Público | Perfil de una empresa |
 | `GET` y `PUT /api/empresas/me` | Empresa | Perfil de la empresa propia |
-| `GET /api/empresas/me/ofertas` | Empresa | Todas sus ofertas, también las cerradas |
+| `GET /api/empresas/me/ofertas` | Empresa | Todas sus ofertas, también las cerradas, con cuántas candidaturas tiene cada una en cada estado |
 | `POST /api/ofertas/{id}/candidaturas` | Candidato | Se inscribe en una oferta abierta |
-| `GET /api/candidaturas/me` | Candidato | Sus candidaturas y el estado de cada una |
-| `GET /api/ofertas/{id}/candidaturas` | Empresa propietaria | Candidaturas recibidas en una oferta |
+| `GET /api/candidaturas/me` | Candidato | Sus candidaturas, el estado de cada una y la fecha de cada paso |
+| `GET /api/ofertas/{id}/mi-candidatura` | Candidato | Su candidatura en una oferta, si se ha inscrito |
+| `POST /api/candidaturas/{id}/retirada` | Candidato propietario | Retira la candidatura mientras no haya decisión |
+| `GET /api/ofertas/{id}/candidaturas` | Empresa propietaria | Candidaturas recibidas en una oferta, con filtro opcional `estado` |
 | `PATCH /api/candidaturas/{id}/estado` | Empresa propietaria | `PENDIENTE` → `EN_REVISION` → `ACEPTADA` o `RECHAZADA` |
+
+Las ofertas abiertas que llevan 60 días sin cambios se cierran solas cada noche, para que el listado no
+acumule vacantes que ya no están activas.
 
 Los errores siguen el formato [Problem Details (RFC 9457)](https://www.rfc-editor.org/rfc/rfc9457), con el
 detalle de cada campo cuando falla la validación.

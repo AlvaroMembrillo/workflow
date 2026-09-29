@@ -6,7 +6,7 @@ import com.alvaro.workflow.oferta.TipoContrato;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public record OfertaRequest(
@@ -28,11 +28,14 @@ public record OfertaRequest(
 		@NotNull(message = "El tipo de contrato es obligatorio")
 		TipoContrato tipoContrato,
 
+		// Obligatorio: la Directiva (UE) 2023/970 exige indicar el salario en las ofertas
 		@Schema(description = "Salario bruto anual mínimo en euros")
-		@PositiveOrZero(message = "El salario mínimo no puede ser negativo")
+		@NotNull(message = "El salario mínimo es obligatorio")
+		@Positive(message = "El salario mínimo debe ser mayor que cero")
 		Integer salarioMinimo,
 
 		@Schema(description = "Salario bruto anual máximo en euros")
-		@PositiveOrZero(message = "El salario máximo no puede ser negativo")
+		@NotNull(message = "El salario máximo es obligatorio")
+		@Positive(message = "El salario máximo debe ser mayor que cero")
 		Integer salarioMaximo) {
 }

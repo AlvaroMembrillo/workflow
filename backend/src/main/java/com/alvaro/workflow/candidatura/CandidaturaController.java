@@ -1,5 +1,6 @@
 package com.alvaro.workflow.candidatura;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springdoc.core.annotations.ParameterObject;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +27,7 @@ import com.alvaro.workflow.candidatura.dto.CandidaturaRequest;
 import com.alvaro.workflow.candidatura.dto.MiCandidaturaResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +49,14 @@ public class CandidaturaController {
 		return candidaturaService.inscribirse(usuarioId, ofertaId, request);
 	}
 
+	@GetMapping("/ofertas/{ofertaId}/mi-candidatura")
+	@PreAuthorize("hasRole('CANDIDATO')")
+	@Operation(summary = "Devuelve la candidatura del candidato en una oferta",
+			description = "404 si no se ha inscrito. Sirve para mostrar en la ficha de la oferta si ya se inscribió.")
+	public MiCandidaturaResponse miCandidaturaEnOferta(@UsuarioActual UUID usuarioId, @PathVariable UUID ofertaId) {
+		return candidaturaService.buscarDelCandidatoEnOferta(usuarioId, ofertaId);
+	}
+
 	@GetMapping("/candidaturas/me")
 	@PreAuthorize("hasRole('CANDIDATO')")
 	@Operation(summary = "Lista las candidaturas del candidato y en qué estado está cada una")
@@ -54,13 +65,23 @@ public class CandidaturaController {
 		return candidaturaService.buscarDelCandidato(usuarioId, pageable);
 	}
 
+	@PostMapping("/candidaturas/{id}/retirada")
+	@PreAuthorize("hasRole('CANDIDATO')")
+	@Operation(summary = "Retira una candidatura propia",
+			description = "Solo mientras la empresa no haya decidido. Una candidatura retirada no se puede reactivar.")
+	public MiCandidaturaResponse retirar(@UsuarioActual UUID usuarioId, @PathVariable UUID id) {
+		return candidaturaService.retirar(usuarioId, id);
+	}
+
 	@GetMapping("/ofertas/{ofertaId}/candidaturas")
 	@PreAuthorize("hasRole('EMPRESA')")
 	@Operation(summary = "Lista las candidaturas recibidas en una oferta de la empresa del usuario")
 	public Page<CandidaturaRecibidaResponse> candidaturasDeLaOferta(@UsuarioActual UUID usuarioId,
 			@PathVariable UUID ofertaId,
+			@Parameter(description = "Solo las candidaturas en estos estados; se puede repetir")
+			@RequestParam(name = "estado", required = false) List<EstadoCandidatura> estados,
 			@ParameterObject @PageableDefault(sort = "fechaCreacion", direction = Sort.Direction.DESC) Pageable pageable) {
-		return candidaturaService.buscarDeLaOferta(usuarioId, ofertaId, pageable);
+		return candidaturaService.buscarDeLaOferta(usuarioId, ofertaId, estados, pageable);
 	}
 
 	@PatchMapping("/candidaturas/{id}/estado")

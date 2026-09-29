@@ -53,10 +53,10 @@ public class Oferta {
 	private TipoContrato tipoContrato;
 
 	/** Salario bruto anual en euros. */
-	@Column(name = "salario_minimo")
+	@Column(name = "salario_minimo", nullable = false)
 	private Integer salarioMinimo;
 
-	@Column(name = "salario_maximo")
+	@Column(name = "salario_maximo", nullable = false)
 	private Integer salarioMaximo;
 
 	@Enumerated(EnumType.STRING)

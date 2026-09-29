@@ -130,10 +130,110 @@ class CandidaturasIntegrationTests extends IntegrationTestBase {
 		assertThat(cambiarEstado(candidaturaId, nuevaEmpresa(), "ACEPTADA")).hasStatus(HttpStatus.FORBIDDEN);
 	}
 
+	@Test
+	void guardaLaFechaDeCadaPasoDeLaCandidatura() {
+		String empresa = nuevaEmpresa();
+		String candidaturaId = leer(post(candidaturasDe(publicarOferta(empresa)), nuevoCandidato(), CARTA), "$.id");
+
+		MvcTestResult enRevision = cambiarEstado(candidaturaId, empresa, "EN_REVISION");
+		assertThat(enRevision).bodyJson().extractingPath("$.fechaRevision").isNotNull();
+		assertThat(enRevision).bodyJson().extractingPath("$.fechaResolucion").isNull();
+
+		MvcTestResult aceptada = cambiarEstado(candidaturaId, empresa, "ACEPTADA");
+		assertThat(aceptada).bodyJson().extractingPath("$.fechaRevision").isNotNull();
+		assertThat(aceptada).bodyJson().extractingPath("$.fechaResolucion").isNotNull();
+	}
+
+	@Test
+	void elCandidatoConsultaSiYaSeInscribioEnUnaOferta() {
+		String ofertaId = publicarOferta(nuevaEmpresa());
+		String candidato = nuevoCandidato();
+
+		assertThat(get("/api/ofertas/" + ofertaId + "/mi-candidatura", candidato)).hasStatus(HttpStatus.NOT_FOUND);
+
+		String candidaturaId = leer(post(candidaturasDe(ofertaId), candidato, CARTA), "$.id");
+		MvcTestResult inscrito = get("/api/ofertas/" + ofertaId + "/mi-candidatura", candidato);
+		assertThat(inscrito).hasStatusOk();
+		assertThat(inscrito).bodyJson().extractingPath("$.id").isEqualTo(candidaturaId);
+		assertThat(inscrito).bodyJson().extractingPath("$.estado").isEqualTo("PENDIENTE");
+	}
+
+	@Test
+	void elCandidatoRetiraSuCandidaturaYLaEmpresaLoVe() {
+		String empresa = nuevaEmpresa();
+		String ofertaId = publicarOferta(empresa);
+		String candidato = nuevoCandidato();
+		String candidaturaId = leer(post(candidaturasDe(ofertaId), candidato, CARTA), "$.id");
+
+		MvcTestResult retirada = post("/api/candidaturas/" + candidaturaId + "/retirada", candidato, "{}");
+
+		assertThat(retirada).hasStatusOk();
+		assertThat(retirada).bodyJson().extractingPath("$.estado").isEqualTo("RETIRADA");
+		assertThat(retirada).bodyJson().extractingPath("$.fechaResolucion").isNotNull();
+		assertThat(get(candidaturasDe(ofertaId), empresa)).bodyJson()
+				.extractingPath("$.content[0].estado").isEqualTo("RETIRADA");
+		// Ya no se puede decidir sobre ella
+		assertThat(cambiarEstado(candidaturaId, empresa, "ACEPTADA")).hasStatus(HttpStatus.CONFLICT);
+	}
+
+	@Test
+	void noSePuedeRetirarUnaCandidaturaYaDecididaNiLaDeOtraPersona() {
+		String empresa = nuevaEmpresa();
+		String candidaturaId = leer(post(candidaturasDe(publicarOferta(empresa)), nuevoCandidato(), CARTA), "$.id");
+
+		assertThat(post("/api/candidaturas/" + candidaturaId + "/retirada", nuevoCandidato(), "{}"))
+				.hasStatus(HttpStatus.FORBIDDEN);
+		assertThat(post("/api/candidaturas/" + candidaturaId + "/retirada", empresa, "{}"))
+				.hasStatus(HttpStatus.FORBIDDEN);
+	}
+
+	@Test
+	void unaCandidaturaAceptadaNoSePuedeRetirar() {
+		String empresa = nuevaEmpresa();
+		String candidato = nuevoCandidato();
+		String candidaturaId = leer(post(candidaturasDe(publicarOferta(empresa)), candidato, CARTA), "$.id");
+		cambiarEstado(candidaturaId, empresa, "ACEPTADA");
+
+		MvcTestResult respuesta = post("/api/candidaturas/" + candidaturaId + "/retirada", candidato, "{}");
+
+		assertThat(respuesta).hasStatus(HttpStatus.CONFLICT);
+		assertThat(respuesta).bodyJson().extractingPath("$.title").isEqualTo("Cambio de estado no permitido");
+	}
+
+	@Test
+	void laEmpresaNoPuedeMarcarUnaCandidaturaComoRetirada() {
+		String empresa = nuevaEmpresa();
+		String candidaturaId = leer(post(candidaturasDe(publicarOferta(empresa)), nuevoCandidato(), CARTA), "$.id");
+
+		MvcTestResult respuesta = cambiarEstado(candidaturaId, empresa, "RETIRADA");
+
+		assertThat(respuesta).hasStatus(HttpStatus.BAD_REQUEST);
+		assertThat(respuesta).bodyJson().extractingPath("$.title").isEqualTo("Estado no permitido");
+	}
+
+	@Test
+	void laEmpresaFiltraLasCandidaturasRecibidasPorEstado() {
+		String empresa = nuevaEmpresa();
+		String ofertaId = publicarOferta(empresa);
+		String enRevisionId = leer(post(candidaturasDe(ofertaId), nuevoCandidato(), CARTA), "$.id");
+		post(candidaturasDe(ofertaId), nuevoCandidato(), CARTA);
+		post(candidaturasDe(ofertaId), nuevoCandidato(), CARTA);
+		cambiarEstado(enRevisionId, empresa, "EN_REVISION");
+
+		MvcTestResult pendientes = get(candidaturasDe(ofertaId) + "?estado=PENDIENTE", empresa);
+		assertThat(pendientes).bodyJson().extractingPath("$.page.totalElements").isEqualTo(2);
+
+		MvcTestResult abiertas = get(candidaturasDe(ofertaId) + "?estado=PENDIENTE&estado=EN_REVISION", empresa);
+		assertThat(abiertas).bodyJson().extractingPath("$.page.totalElements").isEqualTo(3);
+
+		assertThat(get(candidaturasDe(ofertaId) + "?estado=INVENTADO", empresa)).hasStatus(HttpStatus.BAD_REQUEST);
+	}
+
 	private String publicarOferta(String tokenEmpresa) {
 		MvcTestResult respuesta = post("/api/ofertas", tokenEmpresa, """
 				{"titulo": "Desarrollador Java", "descripcion": "Buscamos a alguien con ganas de aprender",
-				 "ubicacion": "Madrid", "modalidad": "REMOTO", "tipoContrato": "INDEFINIDO"}
+				 "ubicacion": "Madrid", "modalidad": "REMOTO", "tipoContrato": "INDEFINIDO",
+				 "salarioMinimo": 30000, "salarioMaximo": 40000}
 				""");
 		assertThat(respuesta).hasStatus(HttpStatus.CREATED);
 		return leer(respuesta, "$.id");
