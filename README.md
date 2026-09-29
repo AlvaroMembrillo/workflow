@@ -1,29 +1,32 @@
 # workflow
 
 [![Backend CI](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml)
+[![Frontend CI](https://github.com/AlvaroMembrillo/workflow/actions/workflows/frontend.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/frontend.yml)
 
 Portal de empleo desarrollado con Spring Boot y Angular.
 
 ## Stack
 
 - **Backend:** Java 25, Spring Boot 4, Spring Security (OAuth2 Resource Server), Spring Data JPA, Flyway, MapStruct
+- **Frontend:** Angular 22 sin zone.js (signals), formularios reactivos, CSS con variables propias
 - **Base de datos:** PostgreSQL 17
-- **Tests:** JUnit 5, MockMvc, Testcontainers
-- **Frontend:** Angular (pendiente)
+- **Tests:** JUnit 5, MockMvc y Testcontainers en el backend; Vitest en el frontend
 
 ## Cómo arrancarlo
 
-Requisitos: Java 25 y Docker.
+Requisitos: Java 25, Node 24 y Docker.
 
 ```bash
-docker compose up -d                # PostgreSQL
-cd backend && ./mvnw spring-boot:run
+docker compose up -d                        # PostgreSQL
+cd backend && ./mvnw spring-boot:run        # API en http://localhost:8080
+cd frontend && npm install && npm start     # Web en http://localhost:4200
 ```
 
-- API: http://localhost:8080
+- Web: http://localhost:4200 (reenvía `/api` al backend, sin configurar CORS)
 - Swagger UI: http://localhost:8080/swagger-ui.html
 
-Para ejecutar los tests (levantan su propio PostgreSQL con Testcontainers): `./mvnw test`
+Tests del backend (levantan su propio PostgreSQL con Testcontainers): `./mvnw test`.
+Tests del frontend: `npm test`. Más detalles en [frontend/README.md](frontend/README.md).
 
 ## API
 
