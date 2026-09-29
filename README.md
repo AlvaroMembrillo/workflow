@@ -2,6 +2,7 @@
 
 [![Backend CI](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml)
 [![Frontend CI](https://github.com/AlvaroMembrillo/workflow/actions/workflows/frontend.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/frontend.yml)
+[![E2E](https://github.com/AlvaroMembrillo/workflow/actions/workflows/e2e.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/e2e.yml)
 
 Portal de empleo desarrollado con Spring Boot y Angular. Todas las ofertas indican el salario y cada
 candidato ve en qué punto está su candidatura, con la fecha de cada paso.
@@ -31,7 +32,7 @@ demo: `docker compose -f docker-compose.demo.yml down -v`.
 - **Backend:** Java 25, Spring Boot 4, Spring Security (OAuth2 Resource Server), Spring Data JPA, Flyway, MapStruct
 - **Frontend:** Angular 22 sin zone.js (signals), formularios reactivos, CSS con variables propias
 - **Base de datos:** PostgreSQL 17
-- **Tests:** JUnit 5, MockMvc y Testcontainers en el backend; Vitest en el frontend
+- **Tests:** JUnit 5, MockMvc y Testcontainers en el backend; Vitest en el frontend; Playwright y axe-core de extremo a extremo
 - **Despliegue:** imágenes Docker multietapa (JRE 25 sin root; nginx con CSP) y Docker Compose
 
 ## Desarrollo
@@ -49,6 +50,18 @@ cd frontend && npm install && npm start     # Web en http://localhost:4200
 
 Tests del backend (levantan su propio PostgreSQL con Testcontainers): `./mvnw test`.
 Tests del frontend: `npm test`. Más detalles en [frontend/README.md](frontend/README.md).
+
+### Tests de extremo a extremo
+
+Recorren la aplicación en un navegador real contra la demo en Docker: la búsqueda (también en móvil), el
+recorrido completo de un candidato (registro, inscripción, seguimiento y retirada), el de una empresa
+(revisar y aceptar una candidatura, publicar una oferta) y una auditoría de accesibilidad WCAG 2.2 AA con
+axe-core en tema claro y oscuro. Crean sus propios usuarios, así que se pueden repetir.
+
+```bash
+docker compose -f docker-compose.demo.yml up --build -d --wait
+cd e2e && npm install && npx playwright install chromium && npm test
+```
 
 ## API
 
