@@ -3,6 +3,7 @@ package com.alvaro.workflow.common;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(AccesoDenegadoException.class)
 	ProblemDetail accesoDenegado(AccesoDenegadoException ex) {
 		return problema(HttpStatus.FORBIDDEN, ex);
+	}
+
+	/**
+	 * Una restricción de la base de datos (por ejemplo, un índice único) ha rechazado el cambio. Pasa cuando dos
+	 * peticiones iguales llegan a la vez y ambas superan las comprobaciones previas del servicio.
+	 */
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	ProblemDetail violacionDeIntegridad() {
+		return problema(HttpStatus.CONFLICT, "Conflicto", "La operación entra en conflicto con los datos existentes");
 	}
 
 	/** Un {@code @PreAuthorize} ha rechazado la petición: el usuario no tiene el rol necesario. */
