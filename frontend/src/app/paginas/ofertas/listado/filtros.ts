@@ -19,11 +19,6 @@ export const leerModalidad = (valor: string | undefined): Modalidad | null =>
 export const leerTipoContrato = (valor: string | undefined): TipoContrato | null =>
   TIPOS_CONTRATO.includes(valor as TipoContrato) ? (valor as TipoContrato) : null;
 
-export const leerPagina = (valor: string | undefined): number => {
-  const pagina = Number(valor);
-  return Number.isInteger(pagina) && pagina > 0 ? pagina : 1;
-};
-
 export function hayFiltros(filtro: FiltroOfertas): boolean {
   return !!(filtro.texto || filtro.ubicacion || filtro.modalidad || filtro.tipoContrato);
 }

@@ -22,6 +22,7 @@ import {
 } from '@lucide/angular';
 
 import { EstadoVacio } from '../../../compartido/estado-vacio/estado-vacio';
+import { leerPagina } from '../../../compartido/paginacion/leer-pagina';
 import { Paginacion } from '../../../compartido/paginacion/paginacion';
 import { TarjetaOferta } from '../../../compartido/tarjeta-oferta/tarjeta-oferta';
 import { Modalidad, Oferta, Pagina, TipoContrato } from '../../../core/api/modelos';
@@ -30,7 +31,6 @@ import {
   FiltroOfertas,
   hayFiltros,
   leerModalidad,
-  leerPagina,
   leerTexto,
   leerTipoContrato,
   parametrosApi,
