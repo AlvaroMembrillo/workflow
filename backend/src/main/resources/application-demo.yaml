@@ -1,0 +1,11 @@
+# application-demo.yml — demostración autocontenida con docker-compose.demo.yml
+# La base de datos se indica con SPRING_DATASOURCE_URL, _USERNAME y _PASSWORD.
+app:
+  jwt:
+    # La clave se genera la primera vez en un volumen de Docker. En producción se usaría una clave propia
+    clave-privada: ${JWT_CLAVE_PRIVADA:/datos/jwt/clave-privada.pem}
+    generar-clave-si-no-existe: true
+
+server:
+  # Detrás de nginx: las URL que genera la aplicación (por ejemplo, la de Swagger) usan el host público
+  forward-headers-strategy: framework
