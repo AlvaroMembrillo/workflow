@@ -1,0 +1,199 @@
+<header class="encabezado">
+  <p class="migas">
+    <a routerLink="/empresa">Mis ofertas</a> / {{ editando() ? 'Editar' : 'Publicar' }}
+  </p>
+  <h1>{{ editando() ? 'Editar oferta' : 'Publicar oferta' }}</h1>
+</header>
+
+@if (esDeOtraEmpresa()) {
+  <p class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    Esta oferta es de otra empresa, así que no puedes editarla.
+  </p>
+} @else if (editando() && existente.error()) {
+  <p class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    No hemos podido cargar la oferta.
+    <button type="button" class="btn btn-secundario btn-pequeno" (click)="existente.reload()">
+      Reintentar
+    </button>
+  </p>
+} @else if (editando() && !existente.hasValue()) {
+  <p class="ayuda" role="status">Cargando la oferta…</p>
+} @else {
+  <div class="rejilla">
+    <form class="formulario tarjeta" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+      @if (error(); as mensajeError) {
+        <p class="aviso aviso-error" role="alert">
+          <svg lucideCircleAlert [size]="18"></svg>
+          {{ mensajeError }}
+        </p>
+      }
+
+      <div class="campo">
+        <label for="titulo">Título del puesto</label>
+        <input
+          id="titulo"
+          class="input"
+          formControlName="titulo"
+          placeholder="Por ejemplo: Desarrollador/a Java Backend"
+          [attr.aria-invalid]="tieneError('titulo')"
+          [attr.aria-describedby]="tieneError('titulo') ? 'titulo-error' : null"
+        />
+        @if (tieneError('titulo')) {
+          <p id="titulo-error" class="error-campo">{{ mensaje('titulo') }}</p>
+        }
+      </div>
+
+      <fieldset class="grupo">
+        <legend>Salario bruto anual</legend>
+        <p class="ayuda" id="salario-ayuda">
+          Obligatorio: la normativa europea exige indicarlo y es lo primero que miran los
+          candidatos.
+        </p>
+        <div class="dos-columnas">
+          <div class="campo">
+            <label for="salarioMinimo">Mínimo (€)</label>
+            <input
+              id="salarioMinimo"
+              class="input"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              step="500"
+              formControlName="salarioMinimo"
+              [attr.aria-invalid]="tieneError('salarioMinimo')"
+              [attr.aria-describedby]="
+                tieneError('salarioMinimo') ? 'salarioMinimo-error' : 'salario-ayuda'
+              "
+            />
+            @if (tieneError('salarioMinimo')) {
+              <p id="salarioMinimo-error" class="error-campo">{{ mensaje('salarioMinimo') }}</p>
+            }
+          </div>
+          <div class="campo">
+            <label for="salarioMaximo">Máximo (€)</label>
+            <input
+              id="salarioMaximo"
+              class="input"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              step="500"
+              formControlName="salarioMaximo"
+              [attr.aria-invalid]="tieneError('salarioMaximo')"
+              [attr.aria-describedby]="
+                tieneError('salarioMaximo') ? 'salarioMaximo-error' : 'salario-ayuda'
+              "
+            />
+            @if (tieneError('salarioMaximo')) {
+              <p id="salarioMaximo-error" class="error-campo">{{ mensaje('salarioMaximo') }}</p>
+            }
+          </div>
+        </div>
+        @if (rangoSalarialNoValido() && (enviado() || formulario.controls.salarioMaximo.touched)) {
+          <p class="error-campo" role="alert">
+            El salario mínimo no puede ser mayor que el máximo.
+          </p>
+        }
+      </fieldset>
+
+      <div class="campo">
+        <label for="ubicacion">Ubicación</label>
+        <input
+          id="ubicacion"
+          class="input"
+          formControlName="ubicacion"
+          placeholder="Ciudad o provincia"
+          [attr.aria-invalid]="tieneError('ubicacion')"
+          [attr.aria-describedby]="tieneError('ubicacion') ? 'ubicacion-error' : null"
+        />
+        @if (tieneError('ubicacion')) {
+          <p id="ubicacion-error" class="error-campo">{{ mensaje('ubicacion') }}</p>
+        }
+      </div>
+
+      <div class="dos-columnas">
+        <fieldset
+          class="grupo"
+          [attr.aria-describedby]="tieneError('modalidad') ? 'modalidad-error' : null"
+        >
+          <legend>Modalidad</legend>
+          @for (opcion of modalidades; track opcion) {
+            <label class="opcion">
+              <input
+                type="radio"
+                formControlName="modalidad"
+                [value]="opcion"
+                [attr.aria-invalid]="tieneError('modalidad')"
+              />
+              {{ textoModalidad[opcion] }}
+            </label>
+          }
+          @if (tieneError('modalidad')) {
+            <p id="modalidad-error" class="error-campo">{{ mensaje('modalidad') }}</p>
+          }
+        </fieldset>
+
+        <fieldset
+          class="grupo"
+          [attr.aria-describedby]="tieneError('tipoContrato') ? 'contrato-error' : null"
+        >
+          <legend>Tipo de contrato</legend>
+          @for (opcion of tiposContrato; track opcion) {
+            <label class="opcion">
+              <input
+                type="radio"
+                formControlName="tipoContrato"
+                [value]="opcion"
+                [attr.aria-invalid]="tieneError('tipoContrato')"
+              />
+              {{ textoContrato[opcion] }}
+            </label>
+          }
+          @if (tieneError('tipoContrato')) {
+            <p id="contrato-error" class="error-campo">{{ mensaje('tipoContrato') }}</p>
+          }
+        </fieldset>
+      </div>
+
+      <div class="campo">
+        <label for="descripcion">Descripción</label>
+        <textarea
+          id="descripcion"
+          class="input"
+          rows="10"
+          formControlName="descripcion"
+          [maxlength]="maximoDescripcion"
+          placeholder="Qué hará la persona, con quién trabajará y qué buscáis"
+          [attr.aria-invalid]="tieneError('descripcion')"
+          aria-describedby="descripcion-ayuda"
+        ></textarea>
+        @if (tieneError('descripcion')) {
+          <p id="descripcion-ayuda" class="error-campo">{{ mensaje('descripcion') }}</p>
+        } @else {
+          <p id="descripcion-ayuda" class="ayuda">
+            {{ longitudDescripcion() }} de {{ maximoDescripcion }} caracteres. Los saltos de línea
+            se respetan.
+          </p>
+        }
+      </div>
+
+      <div class="acciones">
+        <a routerLink="/empresa" class="btn btn-fantasma">Cancelar</a>
+        <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+          @if (enviando()) {
+            Guardando…
+          } @else {
+            {{ editando() ? 'Guardar cambios' : 'Publicar oferta' }}
+          }
+        </button>
+      </div>
+    </form>
+
+    <aside class="vista-previa" aria-label="Vista previa">
+      <p class="etiqueta">Así la verán los candidatos</p>
+      <app-tarjeta-oferta [oferta]="vistaPrevia()" [nivelTitulo]="3" inert />
+    </aside>
+  </div>
+}

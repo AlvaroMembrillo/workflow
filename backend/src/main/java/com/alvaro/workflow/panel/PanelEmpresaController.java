@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +35,13 @@ public class PanelEmpresaController {
 	public Page<OfertaConCandidaturas> misOfertas(@UsuarioActual UUID usuarioId,
 			@ParameterObject @PageableDefault(sort = "fechaCreacion", direction = Sort.Direction.DESC) Pageable pageable) {
 		return panelEmpresaService.misOfertas(usuarioId, pageable);
+	}
+
+	@GetMapping("/ofertas/{id}")
+	@PreAuthorize("hasRole('EMPRESA')")
+	@Operation(summary = "Devuelve una oferta de la empresa del usuario con su resumen de candidaturas")
+	public OfertaConCandidaturas miOferta(@UsuarioActual UUID usuarioId, @PathVariable UUID id) {
+		return panelEmpresaService.miOferta(usuarioId, id);
 	}
 
 }

@@ -1,0 +1,178 @@
+@if (esDeOtraEmpresa()) {
+  <app-estado-vacio
+    titulo="Esta oferta es de otra empresa"
+    texto="Solo puedes ver las candidaturas de tus ofertas."
+  >
+    <a routerLink="/empresa" class="btn btn-primario btn-pequeno">Ver mis ofertas</a>
+  </app-estado-vacio>
+} @else {
+  <header class="encabezado">
+    <p class="migas"><a routerLink="/empresa">Mis ofertas</a> / Candidaturas</p>
+    @if (oferta.hasValue()) {
+      @let o = oferta.value().oferta;
+      <div class="titulo">
+        <h1>{{ o.titulo }}</h1>
+        <span class="estado-oferta" [class.abierta]="o.estado === 'ABIERTA'">
+          {{ o.estado === 'ABIERTA' ? 'Abierta' : 'Cerrada' }}
+        </span>
+      </div>
+      <p class="meta">
+        {{ oferta.value().candidaturas.total }}
+        {{ oferta.value().candidaturas.total === 1 ? 'candidatura' : 'candidaturas' }} ·
+        <a [routerLink]="['/ofertas', o.id]">Ver la oferta publicada</a> ·
+        <a [routerLink]="['/empresa/ofertas', o.id, 'editar']">Editar</a>
+      </p>
+    } @else {
+      <h1>Candidaturas recibidas</h1>
+    }
+  </header>
+
+  <nav class="pestanas" aria-label="Filtrar por estado">
+    @for (pestana of pestanas; track pestana.vista) {
+      <a
+        routerLink="."
+        [queryParams]="{
+          vista: pestana.vista === 'sin-responder' ? null : pestana.vista,
+          pagina: null,
+        }"
+        [class.activa]="pestana.vista === vista()"
+        [attr.aria-current]="pestana.vista === vista() ? 'page' : null"
+      >
+        {{ pestana.texto }}
+        @if (cuantas(pestana) !== null) {
+          <span class="contador">{{ cuantas(pestana) }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <!-- Tras una acción, el foco viene aquí: el botón pulsado puede haber desaparecido -->
+  <div class="mensajes" aria-live="polite" tabindex="-1" #mensajes>
+    @if (aviso(); as textoAviso) {
+      <p class="aviso aviso-ok">
+        <svg lucideCircleCheck [size]="18"></svg>
+        {{ textoAviso }}
+      </p>
+    }
+    @if (error(); as textoError) {
+      <p class="aviso aviso-error" role="alert">
+        <svg lucideCircleAlert [size]="18"></svg>
+        {{ textoError }}
+      </p>
+    }
+  </div>
+
+  @if (candidaturas.hasValue()) {
+    @if (candidaturas.value().content.length) {
+      <ul class="lista" [attr.aria-busy]="candidaturas.isLoading()">
+        @for (candidatura of candidaturas.value().content; track candidatura.id) {
+          <li class="tarjeta candidatura">
+            <div class="cabecera">
+              <div class="persona">
+                <h2>{{ candidatura.candidato.nombre }}</h2>
+                <a class="email" [href]="'mailto:' + candidatura.candidato.email">
+                  <svg lucideMail [size]="14"></svg>{{ candidatura.candidato.email }}
+                </a>
+              </div>
+              <app-estado-candidatura [estado]="candidatura.estado" vista="empresa" />
+            </div>
+
+            @if (diasSinRespuesta(candidatura); as dias) {
+              <p class="espera">
+                <svg lucideClock [size]="16"></svg>
+                Sin respuesta desde hace {{ dias }} días
+              </p>
+            }
+
+            <app-progreso-candidatura [candidatura]="candidatura" />
+
+            @if (candidatura.cartaPresentacion) {
+              <details>
+                <summary>Carta de presentación</summary>
+                <p class="carta">{{ candidatura.cartaPresentacion }}</p>
+              </details>
+            }
+
+            @if (candidatura.estado === 'PENDIENTE' || candidatura.estado === 'EN_REVISION') {
+              <div class="acciones">
+                @if (candidatura.estado === 'PENDIENTE') {
+                  <button
+                    type="button"
+                    class="btn btn-secundario btn-pequeno"
+                    [disabled]="cambiando() === candidatura.id"
+                    (click)="pasarARevision(candidatura)"
+                  >
+                    Pasar a revisión
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="btn btn-secundario btn-pequeno"
+                  [disabled]="cambiando() === candidatura.id"
+                  (click)="pedirDecision(candidatura, 'ACEPTADA')"
+                >
+                  Aceptar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-fantasma btn-pequeno rechazar"
+                  [disabled]="cambiando() === candidatura.id"
+                  (click)="pedirDecision(candidatura, 'RECHAZADA')"
+                >
+                  Rechazar
+                </button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+      <app-paginacion [pagina]="pagina()" [totalPaginas]="candidaturas.value().page.totalPages" />
+    } @else {
+      @switch (vista()) {
+        @case ('sin-responder') {
+          <app-estado-vacio
+            titulo="No tienes candidaturas sin responder"
+            texto="Cuando alguien se inscriba en la oferta aparecerá aquí."
+          />
+        }
+        @case ('en-revision') {
+          <app-estado-vacio
+            titulo="No hay candidaturas en revisión"
+            texto="Pasa a revisión las que te interesen para no perderlas de vista."
+          />
+        }
+        @default {
+          <app-estado-vacio titulo="No hay candidaturas en esta pestaña" />
+        }
+      }
+    }
+  } @else if (candidaturas.error()) {
+    <div class="aviso aviso-error" role="alert">
+      <svg lucideCircleAlert [size]="18"></svg>
+      <div class="aviso-cuerpo">
+        <p>No hemos podido cargar las candidaturas.</p>
+        <button
+          type="button"
+          class="btn btn-secundario btn-pequeno"
+          (click)="candidaturas.reload()"
+        >
+          Reintentar
+        </button>
+      </div>
+    </div>
+  } @else {
+    <p class="ayuda" role="status">Cargando candidaturas…</p>
+  }
+
+  <app-dialogo-confirmacion
+    id="decision"
+    [abierto]="decision() !== null"
+    [titulo]="tituloDecision()"
+    [texto]="textoDecision()"
+    [textoConfirmar]="decision()?.estado === 'ACEPTADA' ? 'Aceptar' : 'Rechazar'"
+    [peligro]="decision()?.estado === 'RECHAZADA'"
+    [ocupado]="cambiando() !== null"
+    (confirmar)="confirmarDecision()"
+    (cancelar)="decision.set(null)"
+  />
+}

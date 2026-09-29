@@ -1,0 +1,109 @@
+<header class="encabezado">
+  <h1>Perfil de empresa</h1>
+  <p>
+    Es lo que ven los candidatos al pulsar en el nombre de tu empresa.
+    @if (empresa.hasValue()) {
+      <a [routerLink]="['/empresas', empresa.value().id]">
+        Ver el perfil público <svg lucideExternalLink [size]="14"></svg>
+      </a>
+    }
+  </p>
+</header>
+
+@if (empresa.hasValue()) {
+  <form class="formulario tarjeta" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+    <div aria-live="polite">
+      @if (aviso(); as textoAviso) {
+        <p class="aviso aviso-ok">
+          <svg lucideCircleCheck [size]="18"></svg>
+          {{ textoAviso }}
+        </p>
+      }
+    </div>
+    @if (error(); as textoError) {
+      <p class="aviso aviso-error" role="alert">
+        <svg lucideCircleAlert [size]="18"></svg>
+        {{ textoError }}
+      </p>
+    }
+
+    <div class="campo">
+      <label for="nombre">Nombre de la empresa</label>
+      <input
+        id="nombre"
+        class="input"
+        autocomplete="organization"
+        formControlName="nombre"
+        [attr.aria-invalid]="tieneError('nombre')"
+        [attr.aria-describedby]="tieneError('nombre') ? 'nombre-error' : null"
+      />
+      @if (tieneError('nombre')) {
+        <p id="nombre-error" class="error-campo">{{ mensaje('nombre') }}</p>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="ubicacion">Ubicación <span class="opcional">(opcional)</span></label>
+      <input
+        id="ubicacion"
+        class="input"
+        formControlName="ubicacion"
+        placeholder="Ciudad o provincia de la sede"
+        [attr.aria-invalid]="tieneError('ubicacion')"
+        [attr.aria-describedby]="tieneError('ubicacion') ? 'ubicacion-error' : null"
+      />
+      @if (tieneError('ubicacion')) {
+        <p id="ubicacion-error" class="error-campo">{{ mensaje('ubicacion') }}</p>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="sitioWeb">Web <span class="opcional">(opcional)</span></label>
+      <input
+        id="sitioWeb"
+        class="input"
+        type="url"
+        inputmode="url"
+        placeholder="https://"
+        formControlName="sitioWeb"
+        [attr.aria-invalid]="tieneError('sitioWeb')"
+        [attr.aria-describedby]="tieneError('sitioWeb') ? 'sitioWeb-error' : null"
+      />
+      @if (tieneError('sitioWeb')) {
+        <p id="sitioWeb-error" class="error-campo">{{ mensaje('sitioWeb') }}</p>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="descripcion">Sobre la empresa <span class="opcional">(opcional)</span></label>
+      <textarea
+        id="descripcion"
+        class="input"
+        rows="6"
+        formControlName="descripcion"
+        placeholder="A qué os dedicáis, cuántas personas sois y cómo trabajáis"
+        [attr.aria-invalid]="tieneError('descripcion')"
+        [attr.aria-describedby]="tieneError('descripcion') ? 'descripcion-error' : null"
+      ></textarea>
+      @if (tieneError('descripcion')) {
+        <p id="descripcion-error" class="error-campo">{{ mensaje('descripcion') }}</p>
+      }
+    </div>
+
+    <div class="acciones">
+      <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+        {{ enviando() ? 'Guardando…' : 'Guardar perfil' }}
+      </button>
+    </div>
+  </form>
+} @else if (empresa.error()) {
+  <p class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    No hemos podido cargar el perfil.
+    <button type="button" class="btn btn-secundario btn-pequeno" (click)="empresa.reload()">
+      Reintentar
+    </button>
+  </p>
+} @else {
+  <p class="ayuda" role="status">Cargando el perfil…</p>
+}

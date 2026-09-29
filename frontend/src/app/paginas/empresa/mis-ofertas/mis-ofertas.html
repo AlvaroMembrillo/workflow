@@ -1,0 +1,103 @@
+<header class="encabezado">
+  <h1>Mis ofertas</h1>
+  <p>
+    Las abiertas aparecen en el buscador. Responde a las candidaturas pendientes lo antes posible.
+  </p>
+</header>
+
+<div aria-live="polite">
+  @if (aviso(); as textoAviso) {
+    <p class="aviso aviso-ok">
+      <svg lucideCircleCheck [size]="18"></svg>
+      {{ textoAviso }}
+    </p>
+  }
+  @if (error(); as textoError) {
+    <p class="aviso aviso-error" role="alert">
+      <svg lucideCircleAlert [size]="18"></svg>
+      {{ textoError }}
+    </p>
+  }
+</div>
+
+@if (ofertas.hasValue()) {
+  @if (ofertas.value().content.length) {
+    <ul class="lista" [attr.aria-busy]="ofertas.isLoading()">
+      @for (fila of ofertas.value().content; track fila.oferta.id) {
+        <li class="tarjeta fila" [class.cerrada]="fila.oferta.estado === 'CERRADA'">
+          <div class="datos">
+            <div class="titulo">
+              <h2>
+                <a [routerLink]="['/empresa/ofertas', fila.oferta.id, 'candidaturas']">{{
+                  fila.oferta.titulo
+                }}</a>
+              </h2>
+              <span class="estado" [class.abierta]="fila.oferta.estado === 'ABIERTA'">
+                {{ fila.oferta.estado === 'ABIERTA' ? 'Abierta' : 'Cerrada' }}
+              </span>
+            </div>
+            <p class="meta">
+              {{ fila.oferta.ubicacion }} · {{ textoModalidad[fila.oferta.modalidad] }} · publicada
+              <app-fecha [iso]="fila.oferta.fechaCreacion" />
+            </p>
+            <app-salario
+              [minimo]="fila.oferta.salarioMinimo"
+              [maximo]="fila.oferta.salarioMaximo"
+            />
+          </div>
+
+          <p class="recuento">
+            <span class="numero">{{ fila.candidaturas.total }}</span>
+            {{ fila.candidaturas.total === 1 ? 'candidatura' : 'candidaturas' }}
+            @if (fila.candidaturas.pendientes) {
+              <span class="pendientes">{{ fila.candidaturas.pendientes }} sin responder</span>
+            }
+          </p>
+
+          <div class="acciones">
+            <a
+              class="btn btn-secundario btn-pequeno"
+              [routerLink]="['/empresa/ofertas', fila.oferta.id, 'candidaturas']"
+              ><svg lucideUsers [size]="16"></svg>Candidaturas</a
+            >
+            <a
+              class="btn btn-fantasma btn-pequeno"
+              [routerLink]="['/empresa/ofertas', fila.oferta.id, 'editar']"
+              ><svg lucidePencil [size]="16"></svg>Editar</a
+            >
+            <button
+              type="button"
+              class="btn btn-fantasma btn-pequeno"
+              [disabled]="cambiando() === fila.oferta.id"
+              (click)="cambiarEstado(fila)"
+            >
+              {{ fila.oferta.estado === 'ABIERTA' ? 'Cerrar' : 'Reabrir' }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+    <app-paginacion [pagina]="pagina()" [totalPaginas]="ofertas.value().page.totalPages" />
+  } @else {
+    <app-estado-vacio
+      titulo="Todavía no has publicado ninguna oferta"
+      texto="Publica la primera: indica el salario y aparecerá en el buscador al momento."
+    >
+      <a routerLink="/empresa/ofertas/nueva" class="btn btn-primario btn-pequeno"
+        >Publicar oferta</a
+      >
+    </app-estado-vacio>
+  }
+} @else if (ofertas.error()) {
+  <div class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    <div class="aviso-cuerpo">
+      <p>No hemos podido cargar tus ofertas. Comprueba tu conexión.</p>
+      <button type="button" class="btn btn-secundario btn-pequeno" (click)="ofertas.reload()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+} @else {
+  <p class="ayuda" role="status">Cargando tus ofertas…</p>
+}

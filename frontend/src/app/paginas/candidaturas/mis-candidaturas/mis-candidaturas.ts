@@ -1,5 +1,15 @@
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideCircleAlert, LucideInfo } from '@lucide/angular';
 import { finalize } from 'rxjs';
@@ -14,6 +24,7 @@ import { ProgresoCandidatura } from '../../../compartido/progreso-candidatura/pr
 import { CandidaturasApi } from '../../../core/api/candidaturas-api';
 import { MiCandidatura, Pagina } from '../../../core/api/modelos';
 import { mensajeDeError } from '../../../core/api/problema';
+import { enfocarTrasRender } from '../../../core/foco';
 
 const TAMANO_PAGINA = 10;
 
@@ -36,6 +47,8 @@ const TAMANO_PAGINA = 10;
 })
 export class MisCandidaturas {
   private readonly candidaturasApi = inject(CandidaturasApi);
+  private readonly injector = inject(Injector);
+  private readonly mensajes = viewChild<ElementRef<HTMLElement>>('mensajes');
 
   readonly pagina = input<number, string | undefined>(1, { transform: leerPagina });
 
@@ -85,10 +98,12 @@ export class MisCandidaturas {
         next: () => {
           this.aviso.set(`Has retirado tu candidatura a "${candidatura.oferta.titulo}".`);
           this.candidaturas.reload();
+          enfocarTrasRender(this.mensajes, this.injector);
         },
         error: (error: unknown) => {
           this.error.set(mensajeDeError(error));
           this.candidaturas.reload();
+          enfocarTrasRender(this.mensajes, this.injector);
         },
       });
   }

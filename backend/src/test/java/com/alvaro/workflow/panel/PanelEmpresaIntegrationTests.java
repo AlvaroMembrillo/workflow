@@ -44,6 +44,20 @@ class PanelEmpresaIntegrationTests extends IntegrationTestBase {
 	}
 
 	@Test
+	void devuelveUnaOfertaPropiaConSuResumenYNoLaDeOtraEmpresa() {
+		String empresa = nuevaEmpresa();
+		String ofertaId = publicarOferta(empresa, "Backend Java");
+		inscribir(ofertaId, nuevoCandidato());
+
+		MvcTestResult propia = get("/api/empresas/me/ofertas/" + ofertaId, empresa);
+		assertThat(propia).hasStatusOk();
+		assertThat(propia).bodyJson().extractingPath("$.oferta.titulo").isEqualTo("Backend Java");
+		assertThat(propia).bodyJson().extractingPath("$.candidaturas.pendientes").isEqualTo(1);
+
+		assertThat(get("/api/empresas/me/ofertas/" + ofertaId, nuevaEmpresa())).hasStatus(HttpStatus.FORBIDDEN);
+	}
+
+	@Test
 	void soloLasEmpresasTienenPanel() {
 		assertThat(get("/api/empresas/me/ofertas", nuevoCandidato())).hasStatus(HttpStatus.FORBIDDEN);
 		assertThat(get("/api/empresas/me/ofertas", null)).hasStatus(HttpStatus.UNAUTHORIZED);

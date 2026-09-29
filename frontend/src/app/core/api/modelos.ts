@@ -71,3 +71,54 @@ export interface MiCandidatura {
   fechaResolucion: string | null;
   fechaActualizacion: string;
 }
+
+/** Cuántas candidaturas tiene una oferta en cada estado. */
+export interface ResumenCandidaturas {
+  total: number;
+  pendientes: number;
+  enRevision: number;
+  aceptadas: number;
+  rechazadas: number;
+  retiradas: number;
+}
+
+/** Una oferta de la empresa en su panel, con el resumen de sus candidaturas. */
+export interface OfertaConCandidaturas {
+  oferta: Oferta;
+  candidaturas: ResumenCandidaturas;
+}
+
+export interface CandidatoResumen {
+  id: string;
+  nombre: string;
+  email: string;
+}
+
+/** Una candidatura vista por la empresa que publicó la oferta. */
+export interface CandidaturaRecibida {
+  id: string;
+  candidato: CandidatoResumen;
+  estado: EstadoCandidatura;
+  cartaPresentacion: string | null;
+  fechaCreacion: string;
+  fechaRevision: string | null;
+  fechaResolucion: string | null;
+  fechaActualizacion: string;
+}
+
+export interface OfertaRequest {
+  titulo: string;
+  descripcion: string;
+  ubicacion: string;
+  modalidad: Modalidad;
+  tipoContrato: TipoContrato;
+  salarioMinimo: number;
+  salarioMaximo: number;
+}
+
+export interface EmpresaRequest {
+  nombre: string;
+  descripcion: string | null;
+  sitioWeb: string | null;
+  ubicacion: string | null;
+}
