@@ -36,6 +36,9 @@ class SecurityConfig {
 				.sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(peticiones -> peticiones
 						.requestMatchers(HttpMethod.POST, "/api/auth/registro", "/api/auth/login").permitAll()
+						// Lectura pública de ofertas y perfiles de empresa. /me va antes porque también encaja con /{id}
+						.requestMatchers(HttpMethod.GET, "/api/empresas/me", "/api/empresas/me/**").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/ofertas", "/api/ofertas/{id}", "/api/empresas/{id}").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						.requestMatchers("/actuator/health/**", "/error").permitAll()
 						.anyRequest().authenticated())

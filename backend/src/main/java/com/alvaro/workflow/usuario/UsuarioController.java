@@ -2,11 +2,11 @@ package com.alvaro.workflow.usuario;
 
 import java.util.UUID;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.alvaro.workflow.auth.UsuarioActual;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,9 +23,8 @@ public class UsuarioController {
 
 	@GetMapping("/me")
 	@Operation(summary = "Devuelve los datos del usuario autenticado")
-	public UsuarioResponse me(@AuthenticationPrincipal Jwt jwt) {
-		// El "sub" del token es el id del usuario (ver TokenService)
-		return usuarioMapper.toResponse(usuarioService.buscarPorId(UUID.fromString(jwt.getSubject())));
+	public UsuarioResponse me(@UsuarioActual UUID usuarioId) {
+		return usuarioMapper.toResponse(usuarioService.buscarPorId(usuarioId));
 	}
 
 }

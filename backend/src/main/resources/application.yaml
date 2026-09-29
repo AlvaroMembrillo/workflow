@@ -8,6 +8,12 @@ spring:
       ddl-auto: validate
   profiles:
     active: dev
+  data:
+    web:
+      pageable:
+        max-page-size: 50
+        # Páginas como {"content": [...], "page": {...}}, un formato estable para el frontend
+        serialization-mode: via-dto
 
 server:
   port: 8080

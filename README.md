@@ -25,6 +25,29 @@ cd backend && ./mvnw spring-boot:run
 
 Para ejecutar los tests (levantan su propio PostgreSQL con Testcontainers): `./mvnw test`
 
+## API
+
+Hay dos tipos de cuenta: **candidatos**, que se inscriben en ofertas, y **empresas**, que las publican y
+gestionan las candidaturas que reciben. La documentación completa está en Swagger UI.
+
+| Endpoint | Acceso | Descripción |
+|---|---|---|
+| `GET /api/ofertas` | Público | Ofertas abiertas, paginadas, con filtros `texto`, `ubicacion`, `modalidad` y `tipoContrato` |
+| `GET /api/ofertas/{id}` | Público | Detalle de una oferta |
+| `POST /api/ofertas` | Empresa | Publica una oferta |
+| `PUT /api/ofertas/{id}` | Empresa propietaria | Modifica una oferta |
+| `PATCH /api/ofertas/{id}/estado` | Empresa propietaria | Abre o cierra una oferta |
+| `GET /api/empresas/{id}` | Público | Perfil de una empresa |
+| `GET` y `PUT /api/empresas/me` | Empresa | Perfil de la empresa propia |
+| `GET /api/empresas/me/ofertas` | Empresa | Todas sus ofertas, también las cerradas |
+| `POST /api/ofertas/{id}/candidaturas` | Candidato | Se inscribe en una oferta abierta |
+| `GET /api/candidaturas/me` | Candidato | Sus candidaturas y el estado de cada una |
+| `GET /api/ofertas/{id}/candidaturas` | Empresa propietaria | Candidaturas recibidas en una oferta |
+| `PATCH /api/candidaturas/{id}/estado` | Empresa propietaria | `PENDIENTE` → `EN_REVISION` → `ACEPTADA` o `RECHAZADA` |
+
+Los errores siguen el formato [Problem Details (RFC 9457)](https://www.rfc-editor.org/rfc/rfc9457), con el
+detalle de cada campo cuando falla la validación.
+
 ## Autenticación
 
 La API usa **JWT emitidos por el propio backend**. El usuario se registra o inicia sesión, recibe un token

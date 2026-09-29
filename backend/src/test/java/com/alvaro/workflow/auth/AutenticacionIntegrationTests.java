@@ -8,38 +8,24 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
-import com.alvaro.workflow.TestcontainersConfiguration;
-import com.jayway.jsonpath.JsonPath;
+import com.alvaro.workflow.IntegrationTestBase;
 
 /**
- * Prueba el flujo completo contra PostgreSQL real: registro, login y acceso a un endpoint protegido con el JWT.
+ * Prueba el flujo completo: registro, login y acceso a un endpoint protegido con el JWT.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
-class AutenticacionIntegrationTests {
-
-	private static final String PASSWORD = "contraseña-segura";
-
-	@Autowired
-	private MockMvcTester mvc;
+class AutenticacionIntegrationTests extends IntegrationTestBase {
 
 	@Autowired
 	private JwtDecoder jwtDecoder;
 
 	@Test
-	void registroDevuelveUnTokenConLosDatosDelUsuario() throws Exception {
+	void registroDevuelveUnTokenConLosDatosDelUsuario() {
 		String email = emailUnico();
 
 		MvcTestResult respuesta = registrar(email, "EMPRESA");
@@ -48,7 +34,7 @@ class AutenticacionIntegrationTests {
 		assertThat(respuesta).bodyJson().extractingPath("$.tokenType").isEqualTo("Bearer");
 		assertThat(respuesta).bodyJson().extractingPath("$.expiresIn").isEqualTo(3600);
 
-		Jwt jwt = jwtDecoder.decode(token(respuesta));
+		Jwt jwt = jwtDecoder.decode(leer(respuesta, "$.accessToken"));
 		assertThat(jwt.getClaimAsString("iss")).isEqualTo("workflow-api");
 		assertThat(jwt.getClaimAsString("email")).isEqualTo(email);
 		assertThat(jwt.getClaimAsStringList("roles")).containsExactly("EMPRESA");
@@ -73,12 +59,9 @@ class AutenticacionIntegrationTests {
 
 	@Test
 	void registroConCamposNoValidosDevuelve400ConElErrorDeCadaCampo() {
-		MvcTestResult respuesta = mvc.post().uri("/api/auth/registro")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-						{"email": "no-es-un-email", "password": "corta", "nombre": "", "rol": "CANDIDATO"}
-						""")
-				.exchange();
+		MvcTestResult respuesta = post("/api/auth/registro", null, """
+				{"email": "no-es-un-email", "password": "corta", "nombre": "", "rol": "CANDIDATO"}
+				""");
 
 		assertThat(respuesta).hasStatus(HttpStatus.BAD_REQUEST);
 		assertThat(respuesta).bodyJson().extractingPath("$.errores").asMap()
@@ -86,14 +69,14 @@ class AutenticacionIntegrationTests {
 	}
 
 	@Test
-	void loginConCredencialesCorrectasDevuelveUnToken() throws Exception {
+	void loginConCredencialesCorrectasDevuelveUnToken() {
 		String email = emailUnico();
 		registrar(email, "CANDIDATO");
 
 		MvcTestResult respuesta = login("  " + email.toUpperCase() + " ", PASSWORD);
 
 		assertThat(respuesta).hasStatusOk();
-		assertThat(jwtDecoder.decode(token(respuesta)).getClaimAsString("email")).isEqualTo(email);
+		assertThat(jwtDecoder.decode(leer(respuesta, "$.accessToken")).getClaimAsString("email")).isEqualTo(email);
 	}
 
 	@Test
@@ -116,13 +99,11 @@ class AutenticacionIntegrationTests {
 	}
 
 	@Test
-	void meConTokenDevuelveLosDatosDelUsuario() throws Exception {
+	void meConTokenDevuelveLosDatosDelUsuario() {
 		String email = emailUnico();
-		String token = token(registrar(email, "CANDIDATO"));
+		String token = leer(registrar(email, "CANDIDATO"), "$.accessToken");
 
-		MvcTestResult respuesta = mvc.get().uri("/api/usuarios/me")
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-				.exchange();
+		MvcTestResult respuesta = get("/api/usuarios/me", token);
 
 		assertThat(respuesta).hasStatusOk();
 		assertThat(respuesta).bodyJson().extractingPath("$.email").isEqualTo(email);
@@ -132,27 +113,25 @@ class AutenticacionIntegrationTests {
 
 	@Test
 	void meSinTokenDevuelve401() {
-		assertThat(mvc.get().uri("/api/usuarios/me").exchange()).hasStatus(HttpStatus.UNAUTHORIZED);
+		assertThat(get("/api/usuarios/me", null)).hasStatus(HttpStatus.UNAUTHORIZED);
 	}
 
 	@Test
-	void tokenManipuladoParaCambiarElRolDevuelve401() throws Exception {
-		String[] partes = token(registrar(emailUnico(), "CANDIDATO")).split("\\.");
+	void tokenManipuladoParaCambiarElRolDevuelve401() {
+		String[] partes = nuevoCandidato().split("\\.");
 		String payload = new String(Base64.getUrlDecoder().decode(partes[1]), StandardCharsets.UTF_8);
 		String payloadManipulado = Base64.getUrlEncoder().withoutPadding()
 				.encodeToString(payload.replace("CANDIDATO", "ADMIN").getBytes(StandardCharsets.UTF_8));
 
-		MvcTestResult respuesta = mvc.get().uri("/api/usuarios/me")
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + partes[0] + "." + payloadManipulado + "." + partes[2])
-				.exchange();
+		MvcTestResult respuesta = get("/api/usuarios/me", partes[0] + "." + payloadManipulado + "." + partes[2]);
 
 		assertThat(respuesta).hasStatus(HttpStatus.UNAUTHORIZED);
 	}
 
 	@Test
 	void swaggerYHealthSonPublicos() {
-		assertThat(mvc.get().uri("/v3/api-docs").exchange()).hasStatusOk();
-		assertThat(mvc.get().uri("/actuator/health").exchange()).hasStatusOk();
+		assertThat(get("/v3/api-docs", null)).hasStatusOk();
+		assertThat(get("/actuator/health", null)).hasStatusOk();
 	}
 
 	@Test
@@ -165,22 +144,10 @@ class AutenticacionIntegrationTests {
 		assertThat(preflight("https://otro-sitio.example")).hasStatus(HttpStatus.FORBIDDEN);
 	}
 
-	private MvcTestResult registrar(String email, String rol) {
-		return mvc.post().uri("/api/auth/registro")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-						{"email": "%s", "password": "%s", "nombre": "Ana García", "rol": "%s"}
-						""".formatted(email, PASSWORD, rol))
-				.exchange();
-	}
-
 	private MvcTestResult login(String email, String password) {
-		return mvc.post().uri("/api/auth/login")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-						{"email": "%s", "password": "%s"}
-						""".formatted(email, password))
-				.exchange();
+		return post("/api/auth/login", null, """
+				{"email": "%s", "password": "%s"}
+				""".formatted(email, password));
 	}
 
 	private MvcTestResult preflight(String origen) {
@@ -188,15 +155,6 @@ class AutenticacionIntegrationTests {
 				.header(HttpHeaders.ORIGIN, origen)
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
 				.exchange();
-	}
-
-	private static String token(MvcTestResult respuesta) throws Exception {
-		return JsonPath.read(respuesta.getResponse().getContentAsString(), "$.accessToken");
-	}
-
-	/** Cada test usa su propio email para no depender del orden ni de los datos de otros tests. */
-	private static String emailUnico() {
-		return "usuario-" + UUID.randomUUID() + "@test.com";
 	}
 
 }
