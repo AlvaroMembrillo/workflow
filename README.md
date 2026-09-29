@@ -3,7 +3,28 @@
 [![Backend CI](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml)
 [![Frontend CI](https://github.com/AlvaroMembrillo/workflow/actions/workflows/frontend.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/frontend.yml)
 
-Portal de empleo desarrollado con Spring Boot y Angular.
+Portal de empleo desarrollado con Spring Boot y Angular. Todas las ofertas indican el salario y cada
+candidato ve en qué punto está su candidatura, con la fecha de cada paso.
+
+## Pruébalo en un comando
+
+Solo necesitas Docker:
+
+```bash
+docker compose -f docker-compose.demo.yml up --build
+```
+
+Abre http://localhost:8000. La demo arranca con 6 empresas, 15 ofertas y candidaturas en todos los
+estados. Estas cuentas tienen la contraseña `demo-workflow`:
+
+| Cuenta | Tipo | Qué ver |
+|---|---|---|
+| `ana@demo.test` | Candidata | Mis candidaturas: una en revisión, una seleccionada, una no seleccionada y una enviada |
+| `rrhh@lumen.test` | Empresa | Panel de Lumen Seguros: la oferta de Java tiene candidaturas pendientes, una con 7 días de espera |
+| `luis@demo.test` | Candidato | Una candidatura retirada |
+
+La documentación de la API está en http://localhost:8000/swagger-ui.html. Para borrar los datos de la
+demo: `docker compose -f docker-compose.demo.yml down -v`.
 
 ## Stack
 
@@ -11,8 +32,9 @@ Portal de empleo desarrollado con Spring Boot y Angular.
 - **Frontend:** Angular 22 sin zone.js (signals), formularios reactivos, CSS con variables propias
 - **Base de datos:** PostgreSQL 17
 - **Tests:** JUnit 5, MockMvc y Testcontainers en el backend; Vitest en el frontend
+- **Despliegue:** imágenes Docker multietapa (JRE 25 sin root; nginx con CSP) y Docker Compose
 
-## Cómo arrancarlo
+## Desarrollo
 
 Requisitos: Java 25, Node 24 y Docker.
 

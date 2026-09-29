@@ -1,0 +1,11 @@
+target/
+.jwt/
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+*.iml
+HELP.md
+Dockerfile
