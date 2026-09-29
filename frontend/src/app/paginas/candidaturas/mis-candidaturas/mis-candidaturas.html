@@ -3,7 +3,8 @@
   <p>Aquí ves en qué punto está cada una. Cuando la empresa la mueve, la fecha se actualiza.</p>
 </header>
 
-<div class="mensajes" aria-live="polite">
+<!-- Tras retirar, el foco viene aquí: el botón pulsado desaparece -->
+<div class="mensajes" aria-live="polite" tabindex="-1" #mensajes>
   @if (aviso(); as textoAviso) {
     <p class="aviso aviso-ok">{{ textoAviso }}</p>
   }

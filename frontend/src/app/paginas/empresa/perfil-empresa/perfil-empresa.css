@@ -1,0 +1,46 @@
+:host {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 40rem;
+}
+
+.encabezado {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.encabezado p {
+  color: var(--muted);
+}
+
+.encabezado a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+form {
+  padding: var(--space-6);
+}
+
+.opcional {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 8rem;
+  line-height: 1.55;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 599px) {
+  form {
+    padding: var(--space-4);
+  }
+}

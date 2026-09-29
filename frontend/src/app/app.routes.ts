@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
 
 import { requiereRol, soloSinSesion } from './core/auth/guards';
+import { avisarCambiosSinGuardar } from './core/cambios-sin-guardar';
 
-const enConstruccion = () =>
-  import('./paginas/en-construccion/en-construccion').then((m) => m.EnConstruccion);
+const formularioOferta = () =>
+  import('./paginas/empresa/formulario-oferta/formulario-oferta').then((m) => m.FormularioOferta);
 
 /**
- * Mapa de pantallas de la guía de diseño. Las que todavía no están hechas muestran qué habrá en ellas.
- * Las rutas privadas vuelven a comprobar la sesión en cada navegación ("always"), así que si el token
+ * Mapa de pantallas de la guía de diseño. Las rutas privadas vuelven a comprobar la sesión en cada navegación ("always"), así que si el token
  * caduca, el guard lleva a la pantalla de acceso.
  */
 export const routes: Routes = [
@@ -53,46 +53,40 @@ export const routes: Routes = [
     path: 'empresa',
     canActivate: [requiereRol('EMPRESA')],
     runGuardsAndResolvers: 'always',
+    loadComponent: () => import('./paginas/empresa/panel/panel').then((m) => m.Panel),
     children: [
       {
         path: '',
-        title: 'Panel de empresa',
-        loadComponent: enConstruccion,
-        data: {
-          titulo: 'Panel de empresa',
-          descripcion: 'Aquí gestionarás tus ofertas, abiertas y cerradas.',
-        },
+        title: 'Mis ofertas',
+        loadComponent: () =>
+          import('./paginas/empresa/mis-ofertas/mis-ofertas').then((m) => m.MisOfertas),
       },
       {
         path: 'ofertas/nueva',
         title: 'Publicar oferta',
-        loadComponent: enConstruccion,
-        data: { titulo: 'Publicar oferta', descripcion: 'Aquí podrás publicar una oferta nueva.' },
+        canDeactivate: [avisarCambiosSinGuardar],
+        loadComponent: formularioOferta,
       },
       {
         path: 'ofertas/:id/editar',
         title: 'Editar oferta',
-        loadComponent: enConstruccion,
-        data: { titulo: 'Editar oferta', descripcion: 'Aquí podrás modificar una de tus ofertas.' },
+        canDeactivate: [avisarCambiosSinGuardar],
+        loadComponent: formularioOferta,
       },
       {
         path: 'ofertas/:id/candidaturas',
         title: 'Candidaturas recibidas',
-        loadComponent: enConstruccion,
-        data: {
-          titulo: 'Candidaturas recibidas',
-          descripcion:
-            'Aquí verás quién se ha inscrito en la oferta y podrás responder a cada persona.',
-        },
+        loadComponent: () =>
+          import('./paginas/empresa/candidaturas-recibidas/candidaturas-recibidas').then(
+            (m) => m.CandidaturasRecibidas,
+          ),
       },
       {
         path: 'perfil',
         title: 'Perfil de empresa',
-        loadComponent: enConstruccion,
-        data: {
-          titulo: 'Perfil de empresa',
-          descripcion: 'Aquí podrás editar el perfil público de tu empresa.',
-        },
+        canDeactivate: [avisarCambiosSinGuardar],
+        loadComponent: () =>
+          import('./paginas/empresa/perfil-empresa/perfil-empresa').then((m) => m.PerfilEmpresa),
       },
     ],
   },

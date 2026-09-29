@@ -1,5 +1,6 @@
 package com.alvaro.workflow.panel;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,6 +36,15 @@ public class PanelEmpresaService {
 				.resumenPorOferta(ofertas.map(OfertaResponse::id).getContent());
 		return ofertas.map(oferta -> new OfertaConCandidaturas(oferta,
 				resumen.getOrDefault(oferta.id(), ResumenCandidaturas.VACIO)));
+	}
+
+	/** Una oferta de la empresa del usuario con su resumen de candidaturas; 403 si es de otra empresa. */
+	@Transactional(readOnly = true)
+	public OfertaConCandidaturas miOferta(UUID usuarioId, UUID ofertaId) {
+		OfertaResponse oferta = ofertaService.obtenerDeLaEmpresaDelUsuario(usuarioId, ofertaId);
+		ResumenCandidaturas resumen = candidaturaService.resumenPorOferta(List.of(ofertaId))
+				.getOrDefault(ofertaId, ResumenCandidaturas.VACIO);
+		return new OfertaConCandidaturas(oferta, resumen);
 	}
 
 }

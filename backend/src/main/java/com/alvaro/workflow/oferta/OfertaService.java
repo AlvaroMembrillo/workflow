@@ -34,6 +34,12 @@ public class OfertaService {
 		return ofertaMapper.toResponse(oferta(id));
 	}
 
+	/** Una oferta de la empresa del usuario; 403 si es de otra empresa. */
+	@Transactional(readOnly = true)
+	public OfertaResponse obtenerDeLaEmpresaDelUsuario(UUID usuarioId, UUID ofertaId) {
+		return ofertaMapper.toResponse(ofertaDeLaEmpresaDelUsuario(usuarioId, ofertaId));
+	}
+
 	/** Todas las ofertas de la empresa del usuario, también las cerradas. */
 	@Transactional(readOnly = true)
 	public Page<OfertaResponse> buscarDeLaEmpresaDelUsuario(UUID usuarioId, Pageable pageable) {
