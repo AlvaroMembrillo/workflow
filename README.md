@@ -1,4 +1,7 @@
 # workflow
+
+[![Backend CI](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml/badge.svg)](https://github.com/AlvaroMembrillo/workflow/actions/workflows/backend.yml)
+
 Portal de empleo desarrollado con Spring Boot y Angular.
 
 ## Stack
