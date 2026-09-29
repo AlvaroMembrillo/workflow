@@ -53,6 +53,14 @@ public class Candidatura {
 	@Column(name = "fecha_actualizacion", nullable = false)
 	private Instant fechaActualizacion;
 
+	/** Cuándo pasó a EN_REVISION, si pasó por ese estado. */
+	@Column(name = "fecha_revision")
+	private Instant fechaRevision;
+
+	/** Cuándo llegó a un estado final: aceptada, rechazada o retirada. */
+	@Column(name = "fecha_resolucion")
+	private Instant fechaResolucion;
+
 	public Candidatura(Oferta oferta, Usuario candidato, String cartaPresentacion) {
 		this.oferta = oferta;
 		this.candidato = candidato;
@@ -66,7 +74,18 @@ public class Candidatura {
 		if (!estado.puedeCambiarA(nuevo)) {
 			throw new CambioDeEstadoNoPermitidoException(estado, nuevo);
 		}
+		Instant ahora = Instant.now();
+		if (nuevo == EstadoCandidatura.EN_REVISION) {
+			this.fechaRevision = ahora;
+		}
+		if (nuevo.esFinal()) {
+			this.fechaResolucion = ahora;
+		}
 		this.estado = nuevo;
+	}
+
+	public boolean esDe(UUID candidatoId) {
+		return candidato.getId().equals(candidatoId);
 	}
 
 	@PreUpdate

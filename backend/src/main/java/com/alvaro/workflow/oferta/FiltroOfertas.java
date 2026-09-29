@@ -3,6 +3,7 @@ package com.alvaro.workflow.oferta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 
@@ -15,7 +16,8 @@ public record FiltroOfertas(
 		@Parameter(description = "Texto a buscar en el título o la descripción") String texto,
 		@Parameter(description = "Parte del nombre de la ubicación, por ejemplo \"Madrid\"") String ubicacion,
 		Modalidad modalidad,
-		TipoContrato tipoContrato) {
+		TipoContrato tipoContrato,
+		@Parameter(description = "Solo las ofertas de esta empresa (para su perfil público)") UUID empresaId) {
 
 	private static final char ESCAPE = '\\';
 
@@ -38,6 +40,9 @@ public record FiltroOfertas(
 		}
 		if (tipoContrato != null) {
 			condiciones.add((oferta, consulta, cb) -> cb.equal(oferta.get("tipoContrato"), tipoContrato));
+		}
+		if (empresaId != null) {
+			condiciones.add((oferta, consulta, cb) -> cb.equal(oferta.get("empresa").get("id"), empresaId));
 		}
 		return Specification.allOf(condiciones);
 	}

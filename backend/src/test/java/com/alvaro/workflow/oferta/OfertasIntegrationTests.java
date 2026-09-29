@@ -48,7 +48,8 @@ class OfertasIntegrationTests extends IntegrationTestBase {
 
 		assertThat(respuesta).hasStatus(HttpStatus.BAD_REQUEST);
 		assertThat(respuesta).bodyJson().extractingPath("$.errores").asMap()
-				.containsOnlyKeys("titulo", "descripcion", "ubicacion", "modalidad", "tipoContrato", "salarioMinimo");
+				.containsOnlyKeys("titulo", "descripcion", "ubicacion", "modalidad", "tipoContrato", "salarioMinimo",
+						"salarioMaximo");
 	}
 
 	@Test
@@ -91,8 +92,8 @@ class OfertasIntegrationTests extends IntegrationTestBase {
 
 		assertThat(get("/api/ofertas?texto=" + marca, null)).bodyJson().extractingPath("$.page.totalElements").isEqualTo(0);
 		MvcTestResult misOfertas = get("/api/empresas/me/ofertas", empresa);
-		assertThat(misOfertas).bodyJson().extractingPath("$.content[0].id").isEqualTo(id);
-		assertThat(misOfertas).bodyJson().extractingPath("$.content[0].estado").isEqualTo("CERRADA");
+		assertThat(misOfertas).bodyJson().extractingPath("$.content[0].oferta.id").isEqualTo(id);
+		assertThat(misOfertas).bodyJson().extractingPath("$.content[0].oferta.estado").isEqualTo("CERRADA");
 	}
 
 	@Test
@@ -111,6 +112,20 @@ class OfertasIntegrationTests extends IntegrationTestBase {
 		assertThat(remotasPorPaginas).bodyJson().extractingPath("$.content").asArray().hasSize(1);
 		assertThat(remotasPorPaginas).bodyJson().extractingPath("$.page.totalElements").isEqualTo(2);
 		assertThat(remotasPorPaginas).bodyJson().extractingPath("$.page.totalPages").isEqualTo(2);
+	}
+
+	@Test
+	void filtraLasOfertasDeUnaEmpresaParaSuPerfilPublico() {
+		String marca = marcaUnica();
+		String empresa = nuevaEmpresa();
+		post("/api/ofertas", empresa, oferta(marca + " Java", "REMOTO"));
+		post("/api/ofertas", nuevaEmpresa(), oferta(marca + " Java", "REMOTO"));
+		String empresaId = leer(get("/api/empresas/me", empresa), "$.id");
+
+		MvcTestResult deLaEmpresa = get("/api/ofertas?texto=" + marca + "&empresaId=" + empresaId, null);
+
+		assertThat(deLaEmpresa).bodyJson().extractingPath("$.page.totalElements").isEqualTo(1);
+		assertThat(deLaEmpresa).bodyJson().extractingPath("$.content[0].empresa.id").isEqualTo(empresaId);
 	}
 
 	@Test

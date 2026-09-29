@@ -29,3 +29,7 @@ app:
     clave-privada: ${JWT_CLAVE_PRIVADA:}
   cors:
     origenes-permitidos: ${CORS_ORIGENES_PERMITIDOS:http://localhost:4200}
+  ofertas:
+    cierre-automatico:
+      inactividad: 60d
+      cron: "0 0 3 * * *"

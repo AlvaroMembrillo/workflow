@@ -12,5 +12,7 @@ public record CandidaturaRecibidaResponse(
 		EstadoCandidatura estado,
 		String cartaPresentacion,
 		Instant fechaCreacion,
+		Instant fechaRevision,
+		Instant fechaResolucion,
 		Instant fechaActualizacion) {
 }

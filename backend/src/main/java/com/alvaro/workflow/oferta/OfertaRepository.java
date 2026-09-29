@@ -1,5 +1,6 @@
 package com.alvaro.workflow.oferta;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,6 +10,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 public interface OfertaRepository extends JpaRepository<Oferta, UUID>, JpaSpecificationExecutor<Oferta> {
 
@@ -24,5 +27,14 @@ public interface OfertaRepository extends JpaRepository<Oferta, UUID>, JpaSpecif
 	@Override
 	@EntityGraph(attributePaths = "empresa")
 	Optional<Oferta> findById(UUID id);
+
+	/** Cierra en una sola sentencia las ofertas abiertas que no se han actualizado desde {@code limite}. */
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("""
+			update Oferta o
+			set o.estado = com.alvaro.workflow.oferta.EstadoOferta.CERRADA, o.fechaActualizacion = :ahora
+			where o.estado = com.alvaro.workflow.oferta.EstadoOferta.ABIERTA and o.fechaActualizacion < :limite
+			""")
+	int cerrarSinActividadDesde(Instant limite, Instant ahora);
 
 }
