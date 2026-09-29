@@ -1,0 +1,72 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'e2e/**'
+      - 'docker-compose.demo.yml'
+      - '.github/workflows/e2e.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'e2e/**'
+      - 'docker-compose.demo.yml'
+      - '.github/workflows/e2e.yml'
+
+permissions:
+  contents: read
+
+# Si llega un push nuevo a la misma rama, cancela la ejecución anterior
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Tests de extremo a extremo
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: e2e
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # La misma demo que se usa en local: nginx con la web, backend y PostgreSQL con datos de ejemplo
+      - name: Arrancar la demo
+        working-directory: .
+        run: docker compose -f docker-compose.demo.yml up --build -d --wait
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: e2e/.nvmrc
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Instalar dependencias y Chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Ejecutar los tests
+        run: npx playwright test
+
+      - name: Guardar los registros de la demo
+        if: failure()
+        working-directory: .
+        run: docker compose -f docker-compose.demo.yml logs --no-color > e2e/registros-demo.txt
+
+      - name: Subir el informe
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-e2e
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            e2e/registros-demo.txt
