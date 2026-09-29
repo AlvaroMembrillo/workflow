@@ -1,0 +1,168 @@
+.detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  grid-template-areas:
+    'cabecera panel'
+    'descripcion panel';
+  gap: var(--space-6) var(--space-8);
+  align-items: start;
+}
+
+.cabecera-oferta {
+  grid-area: cabecera;
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.migas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.migas [aria-current] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 30ch;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 1.3rem + 2vw, 2.25rem);
+  letter-spacing: -0.02em;
+}
+
+.empresa {
+  font-weight: 600;
+}
+
+.hechos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: var(--space-4) 0 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+
+.hechos div {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+}
+
+.hechos dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hechos dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hechos dd app-salario {
+  font-size: 0.9rem;
+}
+
+.panel {
+  grid-area: panel;
+  position: sticky;
+  top: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  box-shadow: var(--shadow);
+}
+
+.aviso-cerrada {
+  background: var(--pend-bg);
+  color: var(--pend-fg);
+}
+
+.enlace-carta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  justify-self: start;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 8rem;
+}
+
+.descripcion {
+  grid-area: descripcion;
+  display: grid;
+  gap: var(--space-3);
+  max-width: 44rem;
+}
+
+.descripcion h2 {
+  font-size: 1.2rem;
+}
+
+/* El texto lo escribe la empresa: se respetan sus saltos de línea sin interpretar HTML */
+.texto {
+  white-space: pre-line;
+  line-height: 1.65;
+}
+
+.aviso-cuerpo {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.cargando {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.cargando i {
+  display: block;
+  height: 0.9rem;
+  border-radius: 6px;
+  background: var(--sunken);
+}
+
+@media (max-width: 899px) {
+  .detalle {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'cabecera'
+      'panel'
+      'descripcion';
+  }
+
+  .panel {
+    position: static;
+  }
+}
+
+@media (max-width: 599px) {
+  .hechos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

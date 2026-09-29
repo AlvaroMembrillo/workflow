@@ -1,0 +1,159 @@
+<header class="portada">
+  <h1>Ofertas de empleo</h1>
+  <p>Todas indican el salario, y puedes seguir tu candidatura en cada paso.</p>
+
+  <form class="buscador" role="search" (submit)="buscar($event)">
+    <label class="campo-icono">
+      <span class="solo-lectores">Puesto, tecnología o empresa</span>
+      <svg lucideSearch [size]="18"></svg>
+      <input
+        class="input"
+        type="search"
+        name="texto"
+        placeholder="Puesto, tecnología o empresa"
+        [(ngModel)]="textoBuscado"
+      />
+    </label>
+    <label class="campo-icono">
+      <span class="solo-lectores">Ubicación</span>
+      <svg lucideMapPin [size]="18"></svg>
+      <input
+        class="input"
+        type="search"
+        name="ubicacion"
+        placeholder="Ciudad o provincia"
+        [(ngModel)]="ubicacionBuscada"
+      />
+    </label>
+    <button type="submit" class="btn btn-primario">Buscar</button>
+  </form>
+</header>
+
+<div class="cuerpo">
+  <aside class="filtros-laterales" aria-label="Filtros">
+    <app-panel-filtros
+      prefijo="lateral"
+      [modalidad]="modalidad()"
+      [tipoContrato]="tipoContrato()"
+      (cambio)="cambiarFiltros($event)"
+    />
+  </aside>
+
+  <section class="resultados" aria-labelledby="titulo-resultados">
+    <h2 id="titulo-resultados" class="solo-lectores">Resultados</h2>
+
+    <div class="barra">
+      <p class="total" role="status" tabindex="-1" #totalResultados>{{ textoTotal() }}</p>
+      <button
+        type="button"
+        class="btn btn-secundario btn-pequeno boton-filtros"
+        (click)="abrirFiltros()"
+      >
+        <svg lucideSlidersHorizontal [size]="16"></svg>
+        Filtros
+        @if (filtrosEnHoja()) {
+          <span class="contador">{{ filtrosEnHoja() }}</span>
+        }
+      </button>
+    </div>
+
+    @if (chips().length) {
+      <ul class="chips" aria-label="Filtros aplicados">
+        @for (chip of chips(); track chip.clave) {
+          <li>
+            <span class="chip">
+              {{ chip.texto }}
+              <button
+                type="button"
+                [attr.aria-label]="'Quitar filtro ' + chip.texto"
+                (click)="quitar(chip.clave)"
+              >
+                <svg lucideX [size]="14"></svg>
+              </button>
+            </span>
+          </li>
+        }
+        <li>
+          <button type="button" class="borrar" (click)="borrarFiltros()">Borrar filtros</button>
+        </li>
+      </ul>
+    }
+
+    @if (ofertas.error()) {
+      <div class="aviso aviso-error" role="alert">
+        <svg lucideCircleAlert [size]="18"></svg>
+        <div class="aviso-cuerpo">
+          <p>No hemos podido cargar las ofertas. Comprueba tu conexión.</p>
+          <button type="button" class="btn btn-secundario btn-pequeno" (click)="ofertas.reload()">
+            Reintentar
+          </button>
+        </div>
+      </div>
+    } @else if (ofertas.hasValue()) {
+      @if (ofertas.value().content.length) {
+        <ol
+          class="lista"
+          [class.recargando]="ofertas.isLoading()"
+          [attr.aria-busy]="ofertas.isLoading()"
+        >
+          @for (oferta of ofertas.value().content; track oferta.id) {
+            <li><app-tarjeta-oferta [oferta]="oferta" [nivelTitulo]="3" /></li>
+          }
+        </ol>
+        <app-paginacion [pagina]="pagina()" [totalPaginas]="ofertas.value().page.totalPages" />
+      } @else if (hayFiltros()) {
+        <app-estado-vacio
+          titulo="No hay ofertas con estos filtros"
+          texto="Prueba a quitar alguno o a buscar en otra ubicación."
+        >
+          <button type="button" class="btn btn-secundario btn-pequeno" (click)="borrarFiltros()">
+            Borrar filtros
+          </button>
+        </app-estado-vacio>
+      } @else {
+        <app-estado-vacio
+          titulo="Todavía no hay ofertas publicadas"
+          texto="Vuelve en unos días: las empresas publican ofertas nuevas cada semana."
+        />
+      }
+    } @else {
+      <ol class="lista" aria-busy="true" aria-label="Cargando ofertas">
+        @for (esqueleto of [1, 2, 3, 4]; track esqueleto) {
+          <li class="tarjeta esqueleto" aria-hidden="true">
+            <i style="width: 60%"></i>
+            <i style="width: 35%"></i>
+            <i style="width: 25%"></i>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+</div>
+
+<dialog #hojaFiltros class="hoja" aria-labelledby="titulo-hoja" (click)="alPulsarHoja($event)">
+  <div class="hoja-contenido">
+    <header>
+      <h2 id="titulo-hoja">Filtros</h2>
+      <button
+        type="button"
+        class="btn btn-fantasma btn-pequeno"
+        aria-label="Cerrar filtros"
+        (click)="cerrarFiltros()"
+      >
+        <svg lucideX [size]="18"></svg>
+      </button>
+    </header>
+    <app-panel-filtros
+      prefijo="hoja"
+      [modalidad]="modalidad()"
+      [tipoContrato]="tipoContrato()"
+      (cambio)="cambiarFiltros($event)"
+    />
+    <footer>
+      <button type="button" class="btn btn-fantasma" (click)="borrarFiltros()">Borrar</button>
+      <button type="button" class="btn btn-primario" (click)="cerrarFiltros()">
+        {{ total() === null ? 'Ver ofertas' : 'Ver ' + textoTotal() }}
+      </button>
+    </footer>
+  </div>
+</dialog>

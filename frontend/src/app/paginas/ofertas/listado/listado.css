@@ -1,0 +1,256 @@
+.portada {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.portada h1 {
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.5rem);
+  letter-spacing: -0.03em;
+}
+
+.portada > p {
+  color: var(--muted);
+  margin-bottom: var(--space-3);
+}
+
+.buscador {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}
+
+.campo-icono {
+  position: relative;
+  display: block;
+}
+
+.campo-icono svg {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.campo-icono .input {
+  padding-left: 2.5rem;
+}
+
+.cuerpo {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.filtros-laterales {
+  position: sticky;
+  top: var(--space-4);
+}
+
+.resultados {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.total {
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.total:focus {
+  outline: none;
+}
+
+.boton-filtros {
+  display: none;
+}
+
+.contador {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  border-radius: var(--r-pill);
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-size: 0.75rem;
+}
+
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2rem;
+  padding: 0 var(--space-1) 0 var(--space-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--brand-line);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.chip button {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.chip button:hover {
+  background: var(--brand-line);
+}
+
+.borrar {
+  border: 0;
+  background: none;
+  padding: var(--space-1);
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+  transition: opacity var(--duracion) ease-out;
+}
+
+.lista.recargando {
+  opacity: 0.6;
+}
+
+.esqueleto {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.esqueleto i {
+  display: block;
+  height: 0.8rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--sunken), var(--line), var(--sunken));
+  background-size: 200% 100%;
+  animation: brillo 1.4s ease-in-out infinite;
+}
+
+@keyframes brillo {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.aviso-cuerpo {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+/* ---------- Hoja de filtros (móvil y tableta) ---------- */
+.hoja {
+  width: min(28rem, 100%);
+  max-height: 85dvh;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 18px 18px 0 0;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+}
+
+.hoja::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+
+.hoja-contenido {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+}
+
+.hoja header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hoja h2 {
+  font-size: 1.15rem;
+}
+
+.hoja footer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 600px) {
+  .hoja {
+    margin: auto;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .cuerpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filtros-laterales {
+    display: none;
+  }
+
+  .boton-filtros {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 699px) {
+  .buscador {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

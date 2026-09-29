@@ -1,0 +1,73 @@
+@if (empresa.hasValue()) {
+  @let e = empresa.value();
+  <header class="cabecera">
+    <span class="inicial" aria-hidden="true">{{ e.nombre.trim().charAt(0).toUpperCase() }}</span>
+    <div>
+      <h1>{{ e.nombre }}</h1>
+      <ul class="datos">
+        @if (e.ubicacion) {
+          <li><svg lucideMapPin [size]="16"></svg>{{ e.ubicacion }}</li>
+        }
+        @if (web(); as url) {
+          <li>
+            <a [href]="url" target="_blank" rel="noopener noreferrer nofollow">
+              {{ webVisible() }}
+              <svg lucideExternalLink [size]="14"></svg>
+              <span class="solo-lectores">(se abre en otra pestaña)</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </header>
+
+  @if (e.descripcion) {
+    <section class="sobre" aria-labelledby="titulo-sobre">
+      <h2 id="titulo-sobre">Sobre la empresa</h2>
+      <p class="texto">{{ e.descripcion }}</p>
+    </section>
+  }
+
+  <section class="ofertas" aria-labelledby="titulo-ofertas">
+    <h2 id="titulo-ofertas">Ofertas abiertas</h2>
+    @if (ofertas.hasValue()) {
+      @if (ofertas.value().content.length) {
+        <ol class="lista">
+          @for (oferta of ofertas.value().content; track oferta.id) {
+            <li><app-tarjeta-oferta [oferta]="oferta" [nivelTitulo]="3" /></li>
+          }
+        </ol>
+      } @else {
+        <app-estado-vacio
+          titulo="No tiene ofertas abiertas ahora mismo"
+          texto="Cuando publique una nueva aparecerá aquí y en el buscador."
+        >
+          <a routerLink="/" class="btn btn-secundario btn-pequeno">Ver todas las ofertas</a>
+        </app-estado-vacio>
+      }
+    } @else if (ofertas.error()) {
+      <p class="aviso aviso-error" role="alert">
+        <svg lucideCircleAlert [size]="18"></svg>
+        No hemos podido cargar sus ofertas.
+      </p>
+    } @else {
+      <p class="ayuda" role="status">Cargando ofertas…</p>
+    }
+  </section>
+} @else if (noEncontrada()) {
+  <app-estado-vacio titulo="Esta empresa no existe" texto="Puede que el enlace esté mal copiado.">
+    <a routerLink="/" class="btn btn-primario btn-pequeno">Ver ofertas</a>
+  </app-estado-vacio>
+} @else if (empresa.error()) {
+  <div class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    <div class="aviso-cuerpo">
+      <p>No hemos podido cargar la empresa. Comprueba tu conexión.</p>
+      <button type="button" class="btn btn-secundario btn-pequeno" (click)="empresa.reload()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+} @else {
+  <p class="ayuda" role="status">Cargando empresa…</p>
+}
