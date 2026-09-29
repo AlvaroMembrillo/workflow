@@ -1,0 +1,48 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+
+permissions:
+  contents: read
+
+# Si llega un push nuevo a la misma rama, cancela la ejecución anterior
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests del backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # Los tests de integración levantan PostgreSQL con Testcontainers (Docker ya viene en el runner)
+      - name: Compilar y ejecutar los tests
+        run: ./mvnw -B verify
+
+      - name: Guardar los informes de los tests
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informes-tests
+          path: backend/target/surefire-reports/
