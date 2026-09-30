@@ -40,6 +40,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return problema(HttpStatus.BAD_REQUEST, ex);
 	}
 
+	@ExceptionHandler(NoAutenticadoException.class)
+	ProblemDetail noAutenticado(NoAutenticadoException ex) {
+		return problema(HttpStatus.UNAUTHORIZED, ex);
+	}
+
 	@ExceptionHandler(CampoNoValidoException.class)
 	ProblemDetail campoNoValido(CampoNoValidoException ex) {
 		ProblemDetail problema = problema(HttpStatus.BAD_REQUEST, ex);

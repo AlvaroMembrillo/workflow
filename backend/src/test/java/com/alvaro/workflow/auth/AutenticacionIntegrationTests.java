@@ -32,7 +32,7 @@ class AutenticacionIntegrationTests extends IntegrationTestBase {
 
 		assertThat(respuesta).hasStatus(HttpStatus.CREATED);
 		assertThat(respuesta).bodyJson().extractingPath("$.tokenType").isEqualTo("Bearer");
-		assertThat(respuesta).bodyJson().extractingPath("$.expiresIn").isEqualTo(3600);
+		assertThat(respuesta).bodyJson().extractingPath("$.expiresIn").isEqualTo(900);
 
 		Jwt jwt = jwtDecoder.decode(leer(respuesta, "$.accessToken"));
 		assertThat(jwt.getClaimAsString("iss")).isEqualTo("workflow-api");

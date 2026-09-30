@@ -29,14 +29,16 @@ class SecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-				// API sin estado: el token viaja en la cabecera Authorization y no en cookies,
-				// así que no hay sesión que proteger frente a CSRF
+				// La API se autentica con el token de la cabecera Authorization, que el navegador no envía solo,
+				// así que CSRF no aplica. La única cookie es la del token de refresco, que solo llega a
+				// /api/auth/refresco y /api/auth/salida: es SameSite=Strict (el navegador no la envía desde otra
+				// web) y las peticiones con un Origin que no sea el de la web se rechazan por CORS
 				.csrf(AbstractHttpConfigurer::disable)
 				.cors(Customizer.withDefaults())
 				.sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(peticiones -> peticiones
 						.requestMatchers(HttpMethod.POST, "/api/auth/registro", "/api/auth/login",
-								"/api/auth/verificacion", "/api/auth/recuperacion", "/api/auth/restablecimiento")
+								"/api/auth/refresco", "/api/auth/salida", "/api/auth/verificacion", "/api/auth/recuperacion", "/api/auth/restablecimiento")
 						.permitAll()
 						// Lectura pública de ofertas y perfiles de empresa. /me va antes porque también encaja con /{id}
 						.requestMatchers(HttpMethod.GET, "/api/empresas/me", "/api/empresas/me/**").authenticated()
