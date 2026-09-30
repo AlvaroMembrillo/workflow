@@ -12,7 +12,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { LucideCircleAlert, LucideCircleCheck, LucideFileText, LucideLock } from '@lucide/angular';
+import {
+  LucideCircleAlert,
+  LucideCircleCheck,
+  LucideFileText,
+  LucideLock,
+  LucideMailWarning,
+} from '@lucide/angular';
 import { finalize } from 'rxjs';
 
 import { CvCandidato } from '../../../compartido/cv-candidato/cv-candidato';
@@ -22,6 +28,7 @@ import { Salario } from '../../../compartido/salario/salario';
 import { CandidaturasApi } from '../../../core/api/candidaturas-api';
 import { MiCandidatura, Oferta } from '../../../core/api/modelos';
 import { mensajeDeError } from '../../../core/api/problema';
+import { Cuenta } from '../../../core/auth/cuenta';
 import { Sesion } from '../../../core/auth/sesion';
 import {
   TEXTO_ESTADO_PARA_CANDIDATO,
@@ -44,6 +51,7 @@ export const LONGITUD_MAXIMA_CARTA = 5000;
     LucideCircleCheck,
     LucideFileText,
     LucideLock,
+    LucideMailWarning,
   ],
   templateUrl: './detalle.html',
   styleUrl: './detalle.css',
@@ -53,6 +61,7 @@ export class Detalle {
   private readonly candidaturasApi = inject(CandidaturasApi);
   private readonly titulo = inject(Title);
   protected readonly sesion = inject(Sesion);
+  protected readonly cuenta = inject(Cuenta);
 
   /** Id de la oferta, de la ruta /ofertas/:id. */
   readonly id = input.required<string>();

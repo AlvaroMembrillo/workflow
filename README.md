@@ -148,6 +148,17 @@ La API usa **JWT emitidos por el propio backend**. El usuario se registra o inic
 
 Para probarlo desde Swagger UI: llama a `/api/auth/login`, copia el `accessToken` y pégalo en **Authorize**.
 
+### Protección contra abuso
+
+- **Límite de intentos.** Tras 5 contraseñas incorrectas seguidas hay que esperar 15 minutos. La cuenta de
+  fallos es por email y dirección IP, para que quien prueba contraseñas no deje sin entrar al dueño de la
+  cuenta. Además hay topes por IP para iniciar sesión, crear cuentas y pedir correos de recuperación, y
+  por destinatario para no usar el portal para bombardear a nadie con correos. Al superarlos la API
+  responde `429` con `Retry-After`. Las cuentas se llevan en memoria: valen para una instancia; con
+  varias habría que pasarlas a Redis.
+- **Email confirmado para publicar e inscribirse.** Una empresa no puede publicar ofertas ni un candidato
+  inscribirse hasta confirmar su email (`403`). Navegar, completar el perfil o subir el currículum sí.
+
 ### Correo
 
 Al registrarse, el usuario recibe un enlace para confirmar su email. También se envían por correo el

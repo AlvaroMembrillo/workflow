@@ -19,6 +19,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.alvaro.workflow.limites.DemasiadosIntentosException;
+
 /**
  * Traduce las excepciones a respuestas de error con formato Problem Details (RFC 9457).
  */
@@ -38,6 +40,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(PeticionNoValidaException.class)
 	ProblemDetail peticionNoValida(PeticionNoValidaException ex) {
 		return problema(HttpStatus.BAD_REQUEST, ex);
+	}
+
+	@ExceptionHandler(DemasiadosIntentosException.class)
+	ResponseEntity<ProblemDetail> demasiadosIntentos(DemasiadosIntentosException ex) {
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+				.header(HttpHeaders.RETRY_AFTER, String.valueOf(Math.max(1, ex.getEspera().toSeconds())))
+				.body(problema(HttpStatus.TOO_MANY_REQUESTS, ex));
 	}
 
 	@ExceptionHandler(NoAutenticadoException.class)

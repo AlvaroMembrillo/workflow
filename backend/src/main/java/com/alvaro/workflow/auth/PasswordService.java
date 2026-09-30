@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alvaro.workflow.common.CampoNoValidoException;
 import com.alvaro.workflow.correo.ColaDeCorreo;
+import com.alvaro.workflow.limites.LimitadorDeIntentos;
+import com.alvaro.workflow.limites.LimitesProperties;
 import com.alvaro.workflow.usuario.Usuario;
 import com.alvaro.workflow.usuario.UsuarioRepository;
 import com.alvaro.workflow.usuario.UsuarioService;
@@ -26,6 +28,8 @@ public class PasswordService {
 	private final CorreosDeCuenta correos;
 	private final ColaDeCorreo colaDeCorreo;
 	private final SesionService sesiones;
+	private final LimitadorDeIntentos limitador;
+	private final LimitesProperties limites;
 
 	/**
 	 * Envía un enlace para cambiar la contraseña si existe una cuenta con ese email. No indica si existe:
@@ -34,6 +38,12 @@ public class PasswordService {
 	@Transactional
 	public void solicitarCambio(String email) {
 		usuarios.findByEmail(Usuario.normalizarEmail(email)).ifPresent(usuario -> {
+			// Pasado el límite no se envían más correos a esa dirección, pero se responde igual: un error
+			// revelaría que la cuenta existe
+			if (!limitador.permite(VerificacionEmailService.CORREOS_POR_DESTINATARIO, usuario.getEmail(),
+					limites.correosPorDestinatario())) {
+				return;
+			}
 			String token = tokens.crear(usuario, TipoDeToken.RESTABLECER_PASSWORD);
 			colaDeCorreo.encolar(correos.restablecerPassword(usuario, token));
 		});

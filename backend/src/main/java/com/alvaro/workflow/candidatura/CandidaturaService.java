@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alvaro.workflow.auth.EmailSinVerificarException;
 import com.alvaro.workflow.candidatura.dto.CandidaturaRecibidaResponse;
 import com.alvaro.workflow.candidatura.dto.CandidaturaRequest;
 import com.alvaro.workflow.candidatura.dto.MiCandidaturaResponse;
@@ -55,6 +56,10 @@ public class CandidaturaService {
 		}
 
 		Usuario candidato = usuarioService.buscarPorId(candidatoId);
+		// La empresa va a escribir a ese email: tiene que ser de quien se inscribe
+		if (!candidato.isEmailVerificado()) {
+			throw new EmailSinVerificarException("inscribirte en ofertas");
+		}
 		Candidatura candidatura = candidaturas.save(new Candidatura(oferta, candidato, request.cartaPresentacion()));
 		avisos.recibida(candidatura);
 		return candidaturaMapper.toMiCandidatura(candidatura);

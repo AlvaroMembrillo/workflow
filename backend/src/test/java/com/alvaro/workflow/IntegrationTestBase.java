@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,14 +51,14 @@ public abstract class IntegrationTestBase {
 				""".formatted(email, PASSWORD, nombre, rol));
 	}
 
-	/** Registra una empresa llamada "Empresa de prueba" y devuelve su token. */
+	/** Registra una empresa llamada "Empresa de prueba", con el email verificado, y devuelve su token. */
 	protected String nuevaEmpresa() {
-		return tokenDeRegistro(registrar(emailUnico(), "EMPRESA", "Empresa de prueba"));
+		return registrarYVerificar(emailUnico(), "EMPRESA", "Empresa de prueba");
 	}
 
-	/** Registra un candidato llamado "Ana García" y devuelve su token. */
+	/** Registra un candidato llamado "Ana García", con el email verificado, y devuelve su token. */
 	protected String nuevoCandidato() {
-		return tokenDeRegistro(registrar(emailUnico(), "CANDIDATO"));
+		return registrarYVerificar(emailUnico(), "CANDIDATO", "Ana García");
 	}
 
 	/** Registra una cuenta y verifica su email con el enlace del correo. Devuelve su token. */
@@ -125,8 +126,23 @@ public abstract class IntegrationTestBase {
 		return leer(respuesta, "$.accessToken");
 	}
 
+	/**
+	 * Cada petición llega desde una dirección IP distinta, para que los límites por IP no hagan fallar
+	 * tests que no tienen que ver con ellos. Los tests de los límites fijan la IP con {@code desde}.
+	 */
 	private static <B extends AbstractMockHttpServletRequestBuilder<B>> B conToken(B peticion, String token) {
+		peticion.remoteAddress(ipUnica());
 		return token == null ? peticion : peticion.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+	}
+
+	/** Una petición POST con JSON que llega desde la IP indicada. */
+	protected MvcTestResult postDesde(String ip, String uri, String json) {
+		return mvc.post().uri(uri).remoteAddress(ip).contentType(MediaType.APPLICATION_JSON).content(json).exchange();
+	}
+
+	protected static String ipUnica() {
+		ThreadLocalRandom azar = ThreadLocalRandom.current();
+		return "10.%d.%d.%d".formatted(azar.nextInt(256), azar.nextInt(256), azar.nextInt(1, 255));
 	}
 
 }

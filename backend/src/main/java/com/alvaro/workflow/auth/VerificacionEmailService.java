@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alvaro.workflow.correo.ColaDeCorreo;
+import com.alvaro.workflow.limites.LimitadorDeIntentos;
+import com.alvaro.workflow.limites.LimitesProperties;
 import com.alvaro.workflow.usuario.Usuario;
 import com.alvaro.workflow.usuario.UsuarioService;
 
@@ -15,10 +17,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VerificacionEmailService {
 
+	/** Los correos de verificación y de recuperación que se piden para una misma dirección comparten límite. */
+	static final String CORREOS_POR_DESTINATARIO = "correos-destinatario";
+
 	private final TokensDeUnUso tokens;
 	private final CorreosDeCuenta correos;
 	private final ColaDeCorreo colaDeCorreo;
 	private final UsuarioService usuarioService;
+	private final LimitadorDeIntentos limitador;
+	private final LimitesProperties limites;
 
 	/** Envía al usuario un enlace para confirmar que el email es suyo. */
 	@Transactional
@@ -32,6 +39,7 @@ public class VerificacionEmailService {
 	public void reenviar(UUID usuarioId) {
 		Usuario usuario = usuarioService.buscarPorId(usuarioId);
 		if (!usuario.isEmailVerificado()) {
+			limitador.contar(CORREOS_POR_DESTINATARIO, usuario.getEmail(), limites.correosPorDestinatario());
 			enviarEnlace(usuario);
 		}
 	}

@@ -53,7 +53,7 @@ for (const tema of ['light', 'dark'] as const) {
     });
 
     test('mi cuenta, con el aviso de email sin confirmar', async ({ page, request }) => {
-      const cuenta = await crearCuenta(request, 'CANDIDATO');
+      const cuenta = await crearCuenta(request, 'CANDIDATO', { verificada: false });
       await entrar(page, cuenta.email, cuenta.password);
       await page.goto('/cuenta');
       await expect(page.getByRole('complementary', { name: 'Email sin confirmar' })).toBeVisible();

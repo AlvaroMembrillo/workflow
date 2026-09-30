@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
 import { Usuario } from './modelos';
@@ -34,6 +34,18 @@ export class Cuenta {
    */
   recargar(): void {
     this.version.update((version) => version + 1);
+  }
+
+  constructor() {
+    // Lo normal es confirmar el email en otra pestaña (la del correo). Al volver a esta, se comprueba
+    // si ya está confirmado para quitar los avisos sin tener que recargar la página
+    const alVolver = () => {
+      if (document.visibilityState === 'visible' && this.emailSinVerificar()) {
+        this.recargar();
+      }
+    };
+    document.addEventListener('visibilitychange', alVolver);
+    inject(DestroyRef).onDestroy(() => document.removeEventListener('visibilitychange', alVolver));
   }
 
   reenviarVerificacion(): Observable<void> {

@@ -8,6 +8,7 @@ import {
   candidaturaDePrueba,
   curriculumDePrueba,
   ofertaDePrueba,
+  usuarioDePrueba,
 } from '../../../../testing/datos-de-prueba';
 import { iniciarSesionDePrueba } from '../../../../testing/sesion-de-prueba';
 import { Curriculum } from '../../../core/api/modelos';
@@ -39,11 +40,14 @@ describe('Detalle de oferta', () => {
     oferta: object = ofertaDePrueba(),
     miCandidatura?: { cuerpo: object; estado: number },
     cv?: Curriculum,
+    cuenta = usuarioDePrueba(),
   ): Promise<void> {
     fixture = TestBed.createComponent(Detalle);
     fixture.componentRef.setInput('id', 'oferta-1');
     TestBed.tick();
     backend.expectOne('/api/ofertas/oferta-1').flush(oferta);
+    // Con sesión, también se piden los datos de la cuenta (si ha confirmado el email)
+    backend.match('/api/usuarios/me').forEach((peticion) => peticion.flush(cuenta));
     if (miCandidatura) {
       backend.expectOne('/api/ofertas/oferta-1/mi-candidatura').flush(miCandidatura.cuerpo, {
         status: miCandidatura.estado,
@@ -122,6 +126,20 @@ describe('Detalle de oferta', () => {
 
     expect(panel().querySelector('app-cv-candidato')!.textContent).toContain('CV Ana García.pdf');
     expect(panel().textContent).toContain('tu currículum si lo has subido');
+  });
+
+  it('sin el email confirmado no muestra el formulario y explica qué hacer', async () => {
+    configurar('CANDIDATO');
+    await crear(
+      ofertaDePrueba(),
+      NO_INSCRITO,
+      undefined,
+      usuarioDePrueba({ emailVerificado: false }),
+    );
+
+    expect(panel().querySelector('form')).toBeNull();
+    expect(panel().textContent).toContain('Confirma tu email para inscribirte');
+    expect(panel().textContent).toContain('ana@test.com');
   });
 
   it('si el candidato ya se inscribió muestra el estado de su candidatura', async () => {

@@ -1,9 +1,8 @@
 package com.alvaro.workflow.auth;
 
-import java.time.Duration;
-
 import org.springframework.stereotype.Component;
 
+import com.alvaro.workflow.common.TextoDeDuracion;
 import com.alvaro.workflow.correo.CorreoProperties;
 import com.alvaro.workflow.correo.Mensaje;
 import com.alvaro.workflow.usuario.Usuario;
@@ -31,7 +30,7 @@ class CorreosDeCuenta {
 
 				El enlace caduca en %s. Si no has creado una cuenta en Workflow, ignora este mensaje.
 				""".formatted(usuario.getNombre(), correo.enlace("/verificar-email#" + token),
-				enTexto(enlaces.validezVerificacion())));
+				TextoDeDuracion.de(enlaces.validezVerificacion())));
 	}
 
 	Mensaje restablecerPassword(Usuario usuario, String token) {
@@ -45,7 +44,7 @@ class CorreosDeCuenta {
 				El enlace caduca en %s y solo se puede usar una vez. Si no lo has pedido tú, ignora este \
 				mensaje: tu contraseña sigue siendo la misma.
 				""".formatted(usuario.getNombre(), correo.enlace("/restablecer#" + token),
-				enTexto(enlaces.validezRestablecimiento())));
+				TextoDeDuracion.de(enlaces.validezRestablecimiento())));
 	}
 
 	Mensaje passwordCambiada(Usuario usuario) {
@@ -58,16 +57,6 @@ class CorreosDeCuenta {
 
 				%s
 				""".formatted(usuario.getNombre(), correo.enlace("/recuperar")));
-	}
-
-	/** "48 horas", "1 hora", "30 minutos": como lo diría una persona. */
-	static String enTexto(Duration duracion) {
-		if (duracion.toHours() >= 1) {
-			long horas = duracion.toHours();
-			return horas == 1 ? "1 hora" : horas + " horas";
-		}
-		long minutos = Math.max(1, duracion.toMinutes());
-		return minutos == 1 ? "1 minuto" : minutos + " minutos";
 	}
 
 }

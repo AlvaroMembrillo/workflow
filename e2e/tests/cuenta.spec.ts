@@ -68,16 +68,8 @@ test('la empresa y el candidato reciben un correo con cada novedad de una candid
   page,
   request,
 }) => {
-  // Los avisos solo se envían a emails confirmados
-  const verificar = async (email: string) => {
-    const correo = await correoPara(request, email, 'Confirma tu email en Workflow');
-    const token = enlaceDe(correo, '/verificar-email').split('#')[1];
-    expect((await request.post('/api/auth/verificacion', { data: { token } })).status()).toBe(204);
-  };
   const empresa = await crearCuenta(request, 'EMPRESA');
   const candidato = await crearCuenta(request, 'CANDIDATO');
-  await verificar(empresa.email);
-  await verificar(candidato.email);
 
   const titulo = `Oferta ${unico('avisos')}`;
   const oferta = await request.post('/api/ofertas', {
@@ -150,4 +142,26 @@ test('la sesión se mantiene al recargar sin guardar ningún token en el navegad
 
   await page.goto('/mis-candidaturas');
   await expect(page).toHaveURL(/\/entrar\?volver=/);
+});
+
+test('tras cinco contraseñas incorrectas hay que esperar para volver a intentarlo', async ({
+  page,
+  request,
+}) => {
+  const cuenta = await crearCuenta(request, 'CANDIDATO', { verificada: false });
+  await page.goto('/entrar');
+  await page.getByLabel('Email').fill(cuenta.email);
+
+  for (let intento = 1; intento <= 5; intento++) {
+    await page.getByLabel('Contraseña', { exact: true }).fill(`no-es-esta-${intento}`);
+    await page.getByRole('button', { name: 'Entrar' }).click();
+    await expect(page.getByRole('alert')).toContainText('El email o la contraseña no son correctos');
+  }
+
+  // Ni siquiera la contraseña correcta entra hasta que pase la espera
+  await page.getByLabel('Contraseña', { exact: true }).fill(cuenta.password);
+  await page.getByRole('button', { name: 'Entrar' }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'Has hecho demasiados intentos. Espera 15 minutos y vuelve a probar.',
+  );
 });

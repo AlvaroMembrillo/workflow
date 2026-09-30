@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alvaro.workflow.auth.EmailSinVerificarException;
 import com.alvaro.workflow.common.AccesoDenegadoException;
 import com.alvaro.workflow.common.PeticionNoValidaException;
 import com.alvaro.workflow.empresa.Empresa;
@@ -51,6 +52,10 @@ public class OfertaService {
 	public OfertaResponse publicar(UUID usuarioId, OfertaRequest request) {
 		validarSalario(request);
 		Empresa empresa = empresaService.empresaDelUsuario(usuarioId);
+		// Publicar exige un email confirmado: es lo mínimo para saber que detrás hay alguien localizable
+		if (!empresa.getUsuario().isEmailVerificado()) {
+			throw new EmailSinVerificarException("publicar ofertas");
+		}
 		Oferta oferta = ofertas.save(new Oferta(empresa, ofertaMapper.toDatos(request)));
 		return ofertaMapper.toResponse(oferta);
 	}
