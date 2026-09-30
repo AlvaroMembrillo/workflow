@@ -3,8 +3,14 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { candidaturaDePrueba, ofertaDePrueba } from '../../../../testing/datos-de-prueba';
+import { asentar } from '../../../../testing/asentar';
+import {
+  candidaturaDePrueba,
+  curriculumDePrueba,
+  ofertaDePrueba,
+} from '../../../../testing/datos-de-prueba';
 import { tokenDePrueba } from '../../../../testing/token-de-prueba';
+import { Curriculum } from '../../../core/api/modelos';
 import { Rol } from '../../../core/auth/modelos';
 import { Detalle } from './detalle';
 
@@ -32,6 +38,7 @@ describe('Detalle de oferta', () => {
   async function crear(
     oferta: object = ofertaDePrueba(),
     miCandidatura?: { cuerpo: object; estado: number },
+    cv?: Curriculum,
   ): Promise<void> {
     fixture = TestBed.createComponent(Detalle);
     fixture.componentRef.setInput('id', 'oferta-1');
@@ -42,6 +49,15 @@ describe('Detalle de oferta', () => {
         status: miCandidatura.estado,
         statusText: miCandidatura.estado === 200 ? 'OK' : 'Not Found',
       });
+      // Si puede inscribirse, el formulario consulta su currículum
+      await asentar();
+      backend
+        .match('/api/candidatos/me/cv')
+        .forEach((peticion) =>
+          cv
+            ? peticion.flush(cv)
+            : peticion.flush({ title: 'Sin currículum' }, { status: 404, statusText: 'Not Found' }),
+        );
     }
     await fixture.whenStable();
   }
@@ -98,6 +114,14 @@ describe('Detalle de oferta', () => {
     expect(panel().querySelector('[role="status"]')!.textContent).toContain('Te inscribiste');
     expect(panel().textContent).toContain('Enviada');
     expect(panel().querySelector('a[href="/mis-candidaturas"]')).not.toBeNull();
+  });
+
+  it('al inscribirse, el candidato ve el currículum que se enviará con su candidatura', async () => {
+    configurar('CANDIDATO');
+    await crear(ofertaDePrueba(), NO_INSCRITO, curriculumDePrueba());
+
+    expect(panel().querySelector('app-cv-candidato')!.textContent).toContain('CV Ana García.pdf');
+    expect(panel().textContent).toContain('tu currículum si lo has subido');
   });
 
   it('si el candidato ya se inscribió muestra el estado de su candidatura', async () => {

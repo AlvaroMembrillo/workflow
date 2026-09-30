@@ -11,7 +11,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideCircleAlert, LucideCircleCheck, LucideClock, LucideMail } from '@lucide/angular';
+import {
+  LucideCircleAlert,
+  LucideCircleCheck,
+  LucideClock,
+  LucideDownload,
+  LucideMail,
+} from '@lucide/angular';
 import { finalize } from 'rxjs';
 
 import { DialogoConfirmacion } from '../../../compartido/dialogo-confirmacion/dialogo-confirmacion';
@@ -20,6 +26,7 @@ import { EstadoVacio } from '../../../compartido/estado-vacio/estado-vacio';
 import { leerPagina } from '../../../compartido/paginacion/leer-pagina';
 import { Paginacion } from '../../../compartido/paginacion/paginacion';
 import { ProgresoCandidatura } from '../../../compartido/progreso-candidatura/progreso-candidatura';
+import { CvApi } from '../../../core/api/cv-api';
 import {
   CandidaturaRecibida,
   EstadoCandidatura as Estado,
@@ -29,6 +36,7 @@ import {
 } from '../../../core/api/modelos';
 import { PanelEmpresaApi } from '../../../core/api/panel-empresa-api';
 import { mensajeDeError } from '../../../core/api/problema';
+import { guardarFichero } from '../../../core/descargas';
 import { enfocarTrasRender } from '../../../core/foco';
 
 export type Vista = 'sin-responder' | 'en-revision' | 'decididas' | 'todas';
@@ -87,6 +95,7 @@ interface Decision {
     LucideCircleAlert,
     LucideCircleCheck,
     LucideClock,
+    LucideDownload,
     LucideMail,
   ],
   templateUrl: './candidaturas-recibidas.html',
@@ -95,6 +104,7 @@ interface Decision {
 })
 export class CandidaturasRecibidas {
   private readonly api = inject(PanelEmpresaApi);
+  private readonly cvApi = inject(CvApi);
   private readonly injector = inject(Injector);
   private readonly mensajes = viewChild<ElementRef<HTMLElement>>('mensajes');
 
@@ -129,6 +139,8 @@ export class CandidaturasRecibidas {
 
   protected readonly decision = signal<Decision | null>(null);
   protected readonly cambiando = signal<string | null>(null);
+  /** Id de la candidatura cuyo currículum se está descargando. */
+  protected readonly descargando = signal<string | null>(null);
   protected readonly aviso = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
 
@@ -177,6 +189,35 @@ export class CandidaturasRecibidas {
     if (decision) {
       this.cambiarEstado(decision.candidatura, decision.estado);
     }
+  }
+
+  protected descargarCv(candidatura: CandidaturaRecibida): void {
+    const cv = candidatura.cv;
+    if (!cv) {
+      return;
+    }
+    this.descargando.set(candidatura.id);
+    this.error.set(null);
+    this.cvApi
+      .descargarDeCandidatura(candidatura.id)
+      .pipe(finalize(() => this.descargando.set(null)))
+      .subscribe({
+        next: (contenido) => guardarFichero(contenido, cv.nombreFichero),
+        error: (error: unknown) => {
+          // 404: el candidato ha quitado su currículum o ha retirado la candidatura después de cargar la lista
+          const yaNoEsta =
+            error instanceof HttpErrorResponse && error.status === HttpStatusCode.NotFound;
+          this.error.set(
+            yaNoEsta
+              ? `${candidatura.candidato.nombre} ha quitado su currículum o ha retirado la candidatura.`
+              : mensajeDeError(error),
+          );
+          if (yaNoEsta) {
+            this.recargar();
+          }
+          enfocarTrasRender(this.mensajes, this.injector);
+        },
+      });
   }
 
   private cambiarEstado(candidatura: CandidaturaRecibida, estado: Estado): void {

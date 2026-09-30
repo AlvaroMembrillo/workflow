@@ -7,7 +7,7 @@ import {
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { ofertaDePrueba, paginaDe } from '../../../../testing/datos-de-prueba';
+import { curriculumDePrueba, ofertaDePrueba, paginaDe } from '../../../../testing/datos-de-prueba';
 import { CandidaturaRecibida } from '../../../core/api/modelos';
 import { CandidaturasRecibidas } from './candidaturas-recibidas';
 
@@ -26,6 +26,7 @@ function recibida(cambios: Partial<CandidaturaRecibida> = {}): CandidaturaRecibi
     candidato: { id: 'u1', nombre: 'Ana García', email: 'ana@test.com' },
     estado: 'PENDIENTE',
     cartaPresentacion: null,
+    cv: null,
     fechaCreacion: new Date().toISOString(),
     fechaRevision: null,
     fechaResolucion: null,
@@ -159,6 +160,47 @@ describe('Candidaturas recibidas', () => {
     expect(pagina().querySelector('.aviso-ok')!.textContent).toContain(
       'Has aceptado la candidatura',
     );
+  });
+
+  it('descarga el currículum del candidato con el nombre del fichero que subió', async () => {
+    const pulsarEnlace = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        expect(this.download).toBe('CV Ana García.pdf');
+      });
+    await crear([recibida({ cv: curriculumDePrueba() })]);
+
+    pagina().querySelector<HTMLButtonElement>('button.cv')!.click();
+    backend.expectOne('/api/candidaturas/c1/cv').flush(new Blob(['%PDF-1.4']));
+    await fixture.whenStable();
+
+    expect(pulsarEnlace).toHaveBeenCalledOnce();
+    pulsarEnlace.mockRestore();
+  });
+
+  it('indica qué candidatos no han subido currículum', async () => {
+    await crear([recibida()]);
+
+    expect(pagina().querySelector('button.cv')).toBeNull();
+    expect(pagina().querySelector('.sin-cv')!.textContent).toContain('No ha subido currículum');
+  });
+
+  it('si el currículum ya no está, lo explica y recarga la lista', async () => {
+    await crear([recibida({ cv: curriculumDePrueba() })]);
+
+    pagina().querySelector<HTMLButtonElement>('button.cv')!.click();
+    backend
+      .expectOne('/api/candidaturas/c1/cv')
+      .flush(new Blob(['{}']), { status: 404, statusText: 'Not Found' });
+    TestBed.tick();
+    responderOferta();
+    peticionCandidaturas().flush(paginaDe([recibida()]));
+    await fixture.whenStable();
+
+    expect(pagina().querySelector('[role="alert"]')!.textContent).toContain(
+      'Ana García ha quitado su currículum o ha retirado la candidatura.',
+    );
+    expect(pagina().querySelector('button.cv')).toBeNull();
   });
 
   it('las candidaturas ya decididas no tienen acciones', async () => {

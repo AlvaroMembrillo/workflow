@@ -1,0 +1,37 @@
+.cv {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.fichero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.fichero svg {
+  flex: none;
+  color: var(--brand);
+}
+
+.nombre {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.quitar {
+  color: var(--no-fg);
+}
+
+/* La región de novedades existe siempre para que el lector de pantalla la anuncie, pero sin ocupar hueco vacía */
+.novedad:empty {
+  display: contents;
+}

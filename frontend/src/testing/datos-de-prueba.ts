@@ -1,4 +1,4 @@
-import { Empresa, MiCandidatura, Oferta, Pagina } from '../app/core/api/modelos';
+import { Curriculum, Empresa, MiCandidatura, Oferta, Pagina } from '../app/core/api/modelos';
 import { Usuario } from '../app/core/auth/modelos';
 
 export function ofertaDePrueba(cambios: Partial<Oferta> = {}): Oferta {
@@ -39,6 +39,15 @@ export function usuarioDePrueba(cambios: Partial<Usuario> = {}): Usuario {
     fechaCreacion: '2026-09-20T10:00:00Z',
     emailVerificado: true,
     avisosPorCorreo: true,
+    ...cambios,
+  };
+}
+
+export function curriculumDePrueba(cambios: Partial<Curriculum> = {}): Curriculum {
+  return {
+    nombreFichero: 'CV Ana García.pdf',
+    tamano: 182_400,
+    fechaSubida: '2026-09-28T10:00:00Z',
     ...cambios,
   };
 }

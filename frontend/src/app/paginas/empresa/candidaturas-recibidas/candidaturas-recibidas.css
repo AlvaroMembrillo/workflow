@@ -144,6 +144,15 @@ summary {
   color: var(--brand);
 }
 
+.cv {
+  justify-self: start;
+}
+
+.sin-cv {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
 .carta {
   margin-top: var(--space-2);
   white-space: pre-line;

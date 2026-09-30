@@ -15,3 +15,11 @@ if (!HTMLDialogElement.prototype.showModal) {
     this.dispatchEvent(new Event('close'));
   };
 }
+
+/**
+ * El entorno de tests no sabe crear direcciones para un fichero en memoria ni descargar al pulsar un
+ * enlace. Los tests de descargas comprueban con `vi.spyOn(HTMLAnchorElement.prototype, 'click')` qué
+ * se descarga.
+ */
+URL.createObjectURL = () => 'blob:fichero-de-prueba';
+URL.revokeObjectURL = () => undefined;

@@ -1,6 +1,15 @@
-import { fechaCorta, fechaRelativa, salarioCompleto, salarioCorto } from './formato';
+import { fechaCorta, fechaRelativa, salarioCompleto, salarioCorto, tamanoLegible } from './formato';
 
 describe('formato', () => {
+  it.each([
+    [300, '1 kB'],
+    [182_400, '182 kB'],
+    [1_240_000, '1,2 MB'],
+    [5_000_000, '5 MB'],
+  ])('tamanoLegible(%s) → %s', (bytes, esperado) => {
+    expect(tamanoLegible(bytes)).toBe(esperado);
+  });
+
   describe('salarioCorto', () => {
     it.each([
       [38000, 45000, '38–45 k€'],

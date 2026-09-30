@@ -48,6 +48,14 @@ export function salarioCompleto(minimo: number | null, maximo: number | null): s
   return null;
 }
 
+/** Tamaño de un fichero: "182 kB" o "1,2 MB". */
+export function tamanoLegible(bytes: number): string {
+  if (bytes < 1_000_000) {
+    return `${Math.max(1, Math.round(bytes / 1000))} kB`;
+  }
+  return `${MILES.format(bytes / 1_000_000)} MB`;
+}
+
 /**
  * Fecha relativa para listados: "hoy", "ayer" o "hace 3 días" durante la primera semana; después,
  * la fecha ("12 sept", con el año si no es el actual).

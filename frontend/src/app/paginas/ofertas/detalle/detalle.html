@@ -87,6 +87,10 @@
                     {{ mensajeError }}
                   </p>
                 }
+                <div class="cv">
+                  <h2 class="etiqueta">Tu currículum</h2>
+                  <app-cv-candidato />
+                </div>
                 @if (mostrarCarta()) {
                   <div class="campo">
                     <label for="carta">Carta de presentación (opcional)</label>
@@ -113,8 +117,8 @@
                   {{ enviando() ? 'Enviando…' : 'Inscribirme' }}
                 </button>
                 <p class="ayuda">
-                  La empresa verá tu nombre, tu email y la carta si la añades. Podrás seguir el
-                  estado en "Mis candidaturas".
+                  La empresa verá tu nombre, tu email, tu currículum si lo has subido y la carta si
+                  la añades. Podrás seguir el estado en "Mis candidaturas".
                 </p>
               </form>
             }

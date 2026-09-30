@@ -17,6 +17,7 @@ import {
 } from '@lucide/angular';
 import { finalize } from 'rxjs';
 
+import { CvCandidato } from '../../compartido/cv-candidato/cv-candidato';
 import { mensajeDeError, problemaDe } from '../../core/api/problema';
 import { Cuenta as ServicioCuenta } from '../../core/auth/cuenta';
 import {
@@ -41,6 +42,7 @@ type Campo = keyof typeof MENSAJES;
   selector: 'app-cuenta',
   imports: [
     ReactiveFormsModule,
+    CvCandidato,
     LucideBadgeCheck,
     LucideCircleAlert,
     LucideCircleCheck,
