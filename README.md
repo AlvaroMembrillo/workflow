@@ -24,6 +24,10 @@ estados. Estas cuentas tienen la contraseña `demo-workflow`:
 | `rrhh@lumen.test` | Empresa | Panel de Lumen Seguros: la oferta de Java tiene candidaturas pendientes, una con 7 días de espera |
 | `luis@demo.test` | Candidato | Una candidatura retirada |
 
+Los correos que envía la aplicación (confirmar el email, cambiar la contraseña, avisos de candidaturas)
+no salen a internet: se recogen en http://localhost:8026. Si creas una cuenta, el enlace para confirmarla
+llega ahí.
+
 La documentación de la API está en http://localhost:8000/swagger-ui.html. Para borrar los datos de la
 demo: `docker compose -f docker-compose.demo.yml down -v`.
 
@@ -52,13 +56,14 @@ demo: `docker compose -f docker-compose.demo.yml down -v`.
 Requisitos: Java 25, Node 24 y Docker.
 
 ```bash
-docker compose up -d                        # PostgreSQL
+docker compose up -d                        # PostgreSQL y Mailpit (servidor de correo de pruebas)
 cd backend && ./mvnw spring-boot:run        # API en http://localhost:8080
 cd frontend && npm install && npm start     # Web en http://localhost:4200
 ```
 
 - Web: http://localhost:4200 (reenvía `/api` al backend, sin configurar CORS)
 - Swagger UI: http://localhost:8080/swagger-ui.html
+- Correos enviados por la aplicación: http://localhost:8025
 
 Tests del backend (levantan su propio PostgreSQL con Testcontainers): `./mvnw test`.
 Tests del frontend: `npm test`. Más detalles en [frontend/README.md](frontend/README.md).
@@ -67,8 +72,9 @@ Tests del frontend: `npm test`. Más detalles en [frontend/README.md](frontend/R
 
 Recorren la aplicación en un navegador real contra la demo en Docker: la búsqueda (también en móvil), el
 recorrido completo de un candidato (registro, inscripción, seguimiento y retirada), el de una empresa
-(revisar y aceptar una candidatura, publicar una oferta) y una auditoría de accesibilidad WCAG 2.2 AA con
-axe-core en tema claro y oscuro. Crean sus propios usuarios, así que se pueden repetir.
+(revisar y aceptar una candidatura, publicar una oferta), los enlaces que llegan por correo (confirmar el
+email, cambiar la contraseña y los avisos, leídos del buzón de la demo) y una auditoría de accesibilidad
+WCAG 2.2 AA con axe-core en tema claro y oscuro. Crean sus propios usuarios, así que se pueden repetir.
 
 ```bash
 docker compose -f docker-compose.demo.yml up --build -d --wait
@@ -119,9 +125,35 @@ firmado y lo envía en cada petición con la cabecera `Authorization: Bearer <to
 |---|---|---|
 | `POST /api/auth/registro` | Público | Crea una cuenta de `CANDIDATO` o `EMPRESA` y devuelve un token |
 | `POST /api/auth/login` | Público | Devuelve un token si el email y la contraseña son correctos |
-| `GET /api/usuarios/me` | Token | Datos del usuario autenticado |
+| `POST /api/auth/verificacion` | Público | Confirma el email con el token del enlace enviado por correo |
+| `POST /api/auth/verificacion/reenvio` | Token | Envía otro enlace de confirmación |
+| `POST /api/auth/recuperacion` | Público | Envía un enlace para cambiar la contraseña olvidada |
+| `POST /api/auth/restablecimiento` | Público | Cambia la contraseña con el token del enlace |
+| `GET` y `PATCH /api/usuarios/me` | Token | Datos del usuario autenticado y sus preferencias de avisos |
+| `POST /api/usuarios/me/password` | Token | Cambia la contraseña indicando la actual |
 
 Para probarlo desde Swagger UI: llama a `/api/auth/login`, copia el `accessToken` y pégalo en **Authorize**.
+
+### Correo
+
+Al registrarse, el usuario recibe un enlace para confirmar su email. También se envían por correo el
+enlace para cambiar una contraseña olvidada y los avisos: a la empresa cuando recibe una candidatura y
+al candidato cuando la empresa la pasa a revisión o decide. Los avisos solo se envían a emails
+confirmados y se pueden desactivar en "Mi cuenta".
+
+- **Enlaces de un solo uso.** El token es aleatorio (256 bits) y en la base de datos solo se guarda su
+  SHA-256, así que leer la base de datos no permite usar los enlaces pendientes. El de confirmación dura
+  48 horas y el de contraseña 1 hora; pedir uno nuevo invalida el anterior.
+- **El token va detrás de `#`.** El navegador no envía esa parte al servidor, así que no queda en los
+  registros de acceso, y la página lo quita de la barra de direcciones al abrirse.
+- **Sin pistas para atacantes.** Pedir el cambio de contraseña responde igual exista o no la cuenta.
+- **El envío no bloquea.** Los correos salen después de confirmar la transacción y en otro hilo: si el
+  servidor de correo está caído, el registro o el cambio de estado funcionan igual. A cambio, un correo que
+  falla se pierde (queda en el registro); para garantizar la entrega haría falta una cola persistente.
+
+Para enviar correo real hay que indicar el servidor con `SMTP_HOST`, `SMTP_PORT`, `SMTP_USUARIO`,
+`SMTP_PASSWORD`, `SMTP_AUTENTICACION=true` y `SMTP_STARTTLS=true`, el remitente con `CORREO_REMITENTE`
+y la dirección de la web con `URL_PUBLICA`, que se usa en los enlaces.
 
 ### Decisiones
 
