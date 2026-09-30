@@ -58,6 +58,22 @@ export class Cuenta {
       .pipe(tap((usuario) => this.datos.set(usuario)));
   }
 
+  cambiarNombre(nombre: string): Observable<Usuario> {
+    return this.http
+      .patch<Usuario>('/api/usuarios/me', { nombre })
+      .pipe(tap((usuario) => this.datos.set(usuario)));
+  }
+
+  /** Copia de todos los datos personales del usuario, en un fichero JSON. */
+  descargarDatos(): Observable<Blob> {
+    return this.http.get('/api/usuarios/me/datos', { responseType: 'blob' });
+  }
+
+  /** Borra la cuenta y todos sus datos. Hay que confirmar con la contraseña. No se puede deshacer. */
+  borrar(password: string): Observable<void> {
+    return this.http.post<void>('/api/usuarios/me/baja', { password });
+  }
+
   cambiarPassword(passwordActual: string, passwordNueva: string): Observable<void> {
     return this.http.post<void>('/api/usuarios/me/password', { passwordActual, passwordNueva });
   }

@@ -37,6 +37,9 @@ const MENSAJES = {
     minlength: 'La contraseña debe tener al menos 8 caracteres',
     maxlength: 'La contraseña no puede tener más de 72 caracteres',
   },
+  aceptaCondiciones: {
+    required: 'Para crear la cuenta tienes que aceptar las condiciones y la política de privacidad',
+  },
 };
 
 const MENSAJES_NOMBRE_EMPRESA = {
@@ -83,6 +86,10 @@ export class Registro implements OnInit {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(8), Validators.maxLength(72)],
     }),
+    aceptaCondiciones: new FormControl(false, {
+      nonNullable: true,
+      validators: [Validators.requiredTrue],
+    }),
   });
 
   ngOnInit(): void {
@@ -121,7 +128,13 @@ export class Registro implements OnInit {
     const { rol, nombre, email, password } = this.formulario.getRawValue();
     this.enviando.set(true);
     this.sesion
-      .registrar({ rol, nombre: nombre.trim(), email: email.trim(), password })
+      .registrar({
+        rol,
+        nombre: nombre.trim(),
+        email: email.trim(),
+        password,
+        aceptaCondiciones: true,
+      })
       .pipe(finalize(() => this.enviando.set(false)))
       .subscribe({
         next: (usuario) =>

@@ -1,5 +1,7 @@
 package com.alvaro.workflow.moderacion;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -56,6 +58,19 @@ public class DenunciaService {
 		Denuncia denuncia = denuncias.save(
 				new Denuncia(oferta, usuarioService.buscarPorId(usuarioId), request.motivo(), detalle));
 		avisos.denunciaRecibida(denuncia);
+	}
+
+	/** Las denuncias hechas por un usuario, para la copia de sus datos. */
+	@Transactional(readOnly = true)
+	public List<DenunciaHecha> hechasPor(UUID usuarioId) {
+		return denuncias.findByDenuncianteIdOrderByFechaCreacionDesc(usuarioId).stream()
+				.map(denuncia -> new DenunciaHecha(denuncia.getOferta().getTitulo(), denuncia.getMotivo(),
+						denuncia.getDetalle(), denuncia.getEstado(), denuncia.getFechaCreacion()))
+				.toList();
+	}
+
+	public record DenunciaHecha(String oferta, MotivoDenuncia motivo, String detalle, EstadoDenuncia estado,
+			Instant fecha) {
 	}
 
 	@Transactional(readOnly = true)

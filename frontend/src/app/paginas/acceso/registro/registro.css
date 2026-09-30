@@ -66,6 +66,23 @@
   color: var(--muted);
 }
 
+.acepto {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-weight: 400;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.acepto input {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  accent-color: var(--brand);
+}
+
 @media (max-width: 420px) {
   .tipos {
     grid-template-columns: 1fr;

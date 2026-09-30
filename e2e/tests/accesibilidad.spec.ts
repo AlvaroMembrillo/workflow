@@ -91,6 +91,21 @@ for (const tema of ['light', 'dark'] as const) {
       await auditar(page);
     });
 
+    test('páginas legales y diálogo para borrar la cuenta', async ({ page, request }) => {
+      for (const ruta of ['/privacidad', '/condiciones', '/aviso-legal']) {
+        await page.goto(ruta);
+        await expect(page.locator('dl, h2').first()).toBeVisible();
+        await auditar(page);
+      }
+
+      const cuenta = await crearCuenta(request, 'EMPRESA');
+      await entrar(page, cuenta.email, cuenta.password);
+      await page.goto('/cuenta');
+      await page.getByRole('button', { name: 'Borrar mi cuenta' }).click();
+      await expect(page.getByRole('dialog', { name: '¿Borrar tu cuenta?' })).toBeVisible();
+      await auditar(page);
+    });
+
     test('mis candidaturas', async ({ page }) => {
       await entrar(page, 'ana@demo.test', PASSWORD_DEMO);
       await page.goto('/mis-candidaturas');

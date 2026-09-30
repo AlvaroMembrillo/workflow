@@ -19,9 +19,14 @@ public class UsuarioService {
 	}
 
 	@Transactional
-	public Usuario cambiarPreferencias(UUID id, boolean avisosPorCorreo) {
+	public Usuario actualizar(UUID id, PreferenciasRequest cambios) {
 		Usuario usuario = buscarPorId(id);
-		usuario.cambiarAvisosPorCorreo(avisosPorCorreo);
+		if (cambios.avisosPorCorreo() != null) {
+			usuario.cambiarAvisosPorCorreo(cambios.avisosPorCorreo());
+		}
+		if (cambios.nombre() != null) {
+			usuario.cambiarNombre(cambios.nombre().strip());
+		}
 		return usuario;
 	}
 

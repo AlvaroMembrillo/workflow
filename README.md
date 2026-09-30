@@ -140,7 +140,7 @@ La API usa **JWT emitidos por el propio backend**. El usuario se registra o inic
 
 | Endpoint | Acceso | Descripción |
 |---|---|---|
-| `POST /api/auth/registro` | Público | Crea una cuenta de `CANDIDATO` o `EMPRESA` y abre su sesión |
+| `POST /api/auth/registro` | Público | Crea una cuenta de `CANDIDATO` o `EMPRESA` (hay que aceptar las condiciones) y abre su sesión |
 | `POST /api/auth/login` | Público | Abre una sesión si el email y la contraseña son correctos |
 | `POST /api/auth/refresco` | Cookie | Devuelve otro token de acceso y el siguiente token de refresco |
 | `POST /api/auth/salida` | Cookie | Cierra la sesión: invalida el token de refresco y borra la cookie |
@@ -148,7 +148,9 @@ La API usa **JWT emitidos por el propio backend**. El usuario se registra o inic
 | `POST /api/auth/verificacion/reenvio` | Token | Envía otro enlace de confirmación |
 | `POST /api/auth/recuperacion` | Público | Envía un enlace para cambiar la contraseña olvidada |
 | `POST /api/auth/restablecimiento` | Público | Cambia la contraseña con el token del enlace |
-| `GET` y `PATCH /api/usuarios/me` | Token | Datos del usuario autenticado y sus preferencias de avisos |
+| `GET` y `PATCH /api/usuarios/me` | Token | Datos del usuario autenticado; cambia su nombre o sus preferencias de avisos |
+| `GET /api/usuarios/me/datos` | Token | Copia en JSON de todos los datos personales del usuario |
+| `POST /api/usuarios/me/baja` | Token | Borra la cuenta y todos sus datos, confirmando con la contraseña |
 | `POST /api/usuarios/me/password` | Token | Cambia la contraseña indicando la actual |
 
 Para probarlo desde Swagger UI: llama a `/api/auth/login`, copia el `accessToken` y pégalo en **Authorize**.
@@ -170,6 +172,22 @@ Para probarlo desde Swagger UI: llama a `/api/auth/login`, copia el `accessToken
   Las cuentas de administrador no se crean desde el registro: se indica una con `ADMIN_EMAIL` y
   `ADMIN_PASSWORD` (12 caracteres como mínimo) y se crea al arrancar si no existe. Las denuncias llegan a
   `CORREO_CONTACTO`.
+
+### Protección de datos (RGPD)
+
+- **Información.** La web tiene política de privacidad, condiciones de uso y aviso legal, enlazados desde
+  el pie y desde el registro, donde hay que aceptarlos (se guarda la fecha). Los datos de quien responde
+  del portal se indican con `LEGAL_TITULAR`, `LEGAL_NIF` y `LEGAL_DOMICILIO`, y el contacto con
+  `CORREO_CONTACTO`. **Los textos son una plantilla ajustada a lo que hace la aplicación: antes de abrir
+  el portal al público tiene que revisarlos un profesional.**
+- **Acceso y portabilidad.** `GET /api/usuarios/me/datos` devuelve en JSON todo lo que se guarda del
+  usuario: cuenta, currículum, candidaturas, perfil de empresa, ofertas y denuncias.
+- **Rectificación.** El usuario cambia su nombre, su currículum y el perfil de su empresa.
+- **Supresión.** `POST /api/usuarios/me/baja` borra la cuenta y todos sus datos tras confirmar la
+  contraseña. Si es una empresa se borran sus ofertas y candidaturas, y se avisa a los candidatos que
+  esperaban respuesta. Las denuncias que hizo el usuario se conservan sin autor.
+- **Minimización.** Las cuentas que no confirman su email en 30 días se borran solas. No hay cookies de
+  analítica ni de publicidad, ni recursos de terceros: por eso la web no necesita aviso de cookies.
 
 ### Correo
 

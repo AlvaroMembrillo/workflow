@@ -39,10 +39,10 @@ public class UsuarioController {
 	}
 
 	@PatchMapping("/me")
-	@Operation(summary = "Cambia las preferencias del usuario autenticado")
+	@Operation(summary = "Cambia el nombre o las preferencias de avisos del usuario autenticado")
 	public UsuarioResponse cambiarPreferencias(@UsuarioActual UUID usuarioId,
 			@Valid @RequestBody PreferenciasRequest request) {
-		return usuarioMapper.toResponse(usuarioService.cambiarPreferencias(usuarioId, request.avisosPorCorreo()));
+		return usuarioMapper.toResponse(usuarioService.actualizar(usuarioId, request));
 	}
 
 	@PostMapping("/me/password")

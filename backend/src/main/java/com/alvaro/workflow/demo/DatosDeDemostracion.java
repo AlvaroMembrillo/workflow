@@ -247,7 +247,7 @@ public class DatosDeDemostracion {
 	}
 
 	private UUID registrar(String email, String nombre, Rol rol) {
-		return authService.crearCuentaVerificada(new RegistroRequest(email, PASSWORD, nombre, rol)).getId();
+		return authService.crearCuentaVerificada(new RegistroRequest(email, PASSWORD, nombre, rol, true)).getId();
 	}
 
 	/** Lleva la candidatura a su estado de ejemplo por el mismo camino que seguiría en la aplicación. */

@@ -1,12 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 
 import { asentar } from '../../../testing/asentar';
 import { usuarioDePrueba } from '../../../testing/datos-de-prueba';
 import { iniciarSesionDePrueba } from '../../../testing/sesion-de-prueba';
 import { Usuario } from '../../core/auth/modelos';
+import { Sesion } from '../../core/auth/sesion';
 import { Cuenta } from './cuenta';
 
 describe('Mi cuenta', () => {
@@ -38,6 +39,12 @@ describe('Mi cuenta', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
+  function boton(texto: string): HTMLButtonElement {
+    return [...pagina().querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.textContent?.replace(/\s+/g, ' ').trim() === texto,
+    )!;
+  }
+
   function escribir(id: string, valor: string): void {
     const campo = pagina().querySelector<HTMLInputElement>(`#${id}`)!;
     campo.value = valor;
@@ -47,7 +54,7 @@ describe('Mi cuenta', () => {
   async function cambiarPassword(actual: string, nueva: string): Promise<void> {
     escribir('passwordActual', actual);
     escribir('passwordNueva', nueva);
-    pagina().querySelector('form')!.dispatchEvent(new Event('submit'));
+    pagina().querySelector('form.formulario')!.dispatchEvent(new Event('submit'));
     await fixture.whenStable();
   }
 
@@ -120,6 +127,96 @@ describe('Mi cuenta', () => {
     expect(pagina().querySelector('.casilla')!.textContent).toContain(
       'cuando alguien se inscriba en una de mis ofertas',
     );
+  });
+
+  it('corrige el nombre sin salir de la página', async () => {
+    await abrir();
+
+    boton('Cambiar el nombre').click();
+    await fixture.whenStable();
+    const campo = pagina().querySelector<HTMLInputElement>('#nombre')!;
+    expect(campo.value).toBe('Ana García');
+    campo.value = ' Ana García López ';
+    pagina().querySelector('form.editar-nombre')!.dispatchEvent(new Event('submit'));
+    const peticion = backend.expectOne('/api/usuarios/me');
+    expect(peticion.request.method).toBe('PATCH');
+    expect(peticion.request.body).toEqual({ nombre: 'Ana García López' });
+    peticion.flush(usuarioDePrueba({ nombre: 'Ana García López' }));
+    await fixture.whenStable();
+
+    expect(pagina().querySelector('.nombre')!.textContent).toContain('Ana García López');
+    expect(pagina().querySelector('form.editar-nombre')).toBeNull();
+    expect(pagina().textContent).toContain('Nombre guardado.');
+  });
+
+  it('descarga una copia de los datos en un fichero', async () => {
+    const pulsarEnlace = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        expect(this.download).toBe('workflow-mis-datos.json');
+      });
+    await abrir();
+
+    boton('Descargar').click();
+    backend.expectOne('/api/usuarios/me/datos').flush(new Blob(['{}']));
+    await fixture.whenStable();
+
+    expect(pulsarEnlace).toHaveBeenCalledOnce();
+    pulsarEnlace.mockRestore();
+  });
+
+  it('borrar la cuenta explica las consecuencias y pide la contraseña', async () => {
+    await abrir();
+    const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    boton('Borrar mi cuenta').click();
+    await fixture.whenStable();
+    const dialogo = pagina().querySelector<HTMLDialogElement>('dialog.baja')!;
+    expect(dialogo.open).toBe(true);
+    expect(dialogo.textContent).toContain('Se borrarán tu currículum y todas tus candidaturas');
+    expect(dialogo.textContent).toContain('No se puede deshacer');
+
+    // Sin contraseña no se envía nada
+    dialogo.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+    backend.expectNone('/api/usuarios/me/baja');
+    expect(dialogo.querySelector('#baja-password-error')!.textContent).toContain(
+      'Escribe tu contraseña',
+    );
+
+    dialogo.querySelector<HTMLInputElement>('#baja-password')!.value = 'mi-clave-123';
+    dialogo.querySelector('form')!.dispatchEvent(new Event('submit'));
+    const peticion = backend.expectOne('/api/usuarios/me/baja');
+    expect(peticion.request.body).toEqual({ password: 'mi-clave-123' });
+    peticion.flush(null, { status: 204, statusText: 'No Content' });
+    await fixture.whenStable();
+
+    expect(TestBed.inject(Sesion).iniciada()).toBe(false);
+    expect(navegar).toHaveBeenCalledWith('/cuenta-borrada');
+    backend.expectNone('/api/auth/salida');
+  });
+
+  it('si la contraseña para borrar la cuenta no es correcta, lo dice y no cierra la sesión', async () => {
+    await abrir(usuarioDePrueba({ rol: 'EMPRESA' }));
+
+    boton('Borrar mi cuenta').click();
+    await fixture.whenStable();
+    const dialogo = pagina().querySelector<HTMLDialogElement>('dialog.baja')!;
+    expect(dialogo.textContent).toContain('todas tus ofertas y las candidaturas que has recibido');
+    dialogo.querySelector<HTMLInputElement>('#baja-password')!.value = 'no-es-esta';
+    dialogo.querySelector('form')!.dispatchEvent(new Event('submit'));
+    backend
+      .expectOne('/api/usuarios/me/baja')
+      .flush(
+        { title: 'Datos no válidos', errores: { password: 'La contraseña no es correcta' } },
+        { status: 400, statusText: 'Bad Request' },
+      );
+    await fixture.whenStable();
+
+    expect(dialogo.querySelector('#baja-password-error')!.textContent).toBe(
+      'La contraseña no es correcta',
+    );
+    expect(TestBed.inject(Sesion).iniciada()).toBe(true);
   });
 
   it('cambia la contraseña y vacía el formulario', async () => {

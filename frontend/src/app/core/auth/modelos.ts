@@ -20,6 +20,8 @@ export interface RegistroRequest {
   password: string;
   nombre: string;
   rol: RolRegistrable;
+  /** El usuario ha leído y acepta las condiciones de uso y la política de privacidad. */
+  aceptaCondiciones: true;
 }
 
 /** Lo que la interfaz necesita saber del usuario, sacado del JWT. */

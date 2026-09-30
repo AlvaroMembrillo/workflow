@@ -60,12 +60,25 @@ class AutenticacionIntegrationTests extends IntegrationTestBase {
 	@Test
 	void registroConCamposNoValidosDevuelve400ConElErrorDeCadaCampo() {
 		MvcTestResult respuesta = post("/api/auth/registro", null, """
-				{"email": "no-es-un-email", "password": "corta", "nombre": "", "rol": "CANDIDATO"}
+				{"email": "no-es-un-email", "password": "corta", "nombre": "", "rol": "CANDIDATO", "aceptaCondiciones": true}
 				""");
 
 		assertThat(respuesta).hasStatus(HttpStatus.BAD_REQUEST);
 		assertThat(respuesta).bodyJson().extractingPath("$.errores").asMap()
 				.containsOnlyKeys("email", "password", "nombre");
+	}
+
+	@Test
+	void noSePuedeCrearUnaCuentaSinAceptarLasCondiciones() {
+		for (String aceptacion : new String[] { "", ", \"aceptaCondiciones\": false", ", \"aceptaCondiciones\": null" }) {
+			MvcTestResult respuesta = post("/api/auth/registro", null, """
+					{"email": "%s", "password": "%s", "nombre": "Ana García", "rol": "CANDIDATO"%s}
+					""".formatted(emailUnico(), PASSWORD, aceptacion));
+
+			assertThat(respuesta).hasStatus(HttpStatus.BAD_REQUEST);
+			assertThat(respuesta).bodyJson().extractingPath("$.errores.aceptaCondiciones")
+					.isEqualTo("Tienes que aceptar las condiciones de uso y la política de privacidad");
+		}
 	}
 
 	@Test

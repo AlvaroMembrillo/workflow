@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface CandidaturaRepository extends JpaRepository<Candidatura, UUID> {
@@ -33,6 +34,22 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, UUID> 
 	@Override
 	@EntityGraph(attributePaths = { "oferta", "oferta.empresa", "candidato" })
 	Optional<Candidatura> findById(UUID id);
+
+	/** Todas las candidaturas de un candidato, para la copia de sus datos. */
+	@EntityGraph(attributePaths = { "oferta", "oferta.empresa" })
+	List<Candidatura> findByCandidatoIdOrderByFechaCreacionDesc(UUID candidatoId);
+
+	/** Las candidaturas a ofertas de una empresa que siguen esperando respuesta, con el candidato y la oferta. */
+	@EntityGraph(attributePaths = { "oferta", "candidato" })
+	List<Candidatura> findByOfertaEmpresaIdAndEstadoIn(UUID empresaId, Collection<EstadoCandidatura> estados);
+
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("delete from Candidatura c where c.candidato.id = :candidatoId")
+	void borrarDelCandidato(UUID candidatoId);
+
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("delete from Candidatura c where c.oferta.id in (select o.id from Oferta o where o.empresa.id = :empresaId)")
+	void borrarDeLasOfertasDeLaEmpresa(UUID empresaId);
 
 	/** Número de candidaturas en cada estado para varias ofertas, en una sola consulta. */
 	@Query("""

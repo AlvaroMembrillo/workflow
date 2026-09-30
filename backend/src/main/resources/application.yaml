@@ -72,6 +72,14 @@ app:
     url-publica: ${URL_PUBLICA:http://localhost:4200}
     # Quien atiende el portal: recibe las denuncias y se da como contacto
     contacto: ${CORREO_CONTACTO:soporte@workflow.localhost}
+  # Quién responde del portal ante los usuarios. Aparece en el aviso legal y en la política de privacidad
+  legal:
+    titular: ${LEGAL_TITULAR:}
+    nif: ${LEGAL_NIF:}
+    domicilio: ${LEGAL_DOMICILIO:}
+  cuentas:
+    # Las cuentas que no confirman su email en este plazo se borran
+    borrar-sin-verificar-tras: 30d
   admin:
     # Si se indican, al arrancar se crea esta cuenta de administrador (si no existe ya)
     email: ${ADMIN_EMAIL:}

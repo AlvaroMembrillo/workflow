@@ -26,6 +26,13 @@ public interface OfertaRepository extends JpaRepository<Oferta, UUID>, JpaSpecif
 
 	List<Oferta> findByEmpresaIdAndEstadoNot(UUID empresaId, EstadoOferta estado);
 
+	List<Oferta> findByEmpresaIdOrderByFechaCreacionDesc(UUID empresaId);
+
+	/** Al borrar la cuenta de una empresa. Las denuncias de sus ofertas se borran en cascada. */
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("delete from Oferta o where o.empresa.id = :empresaId")
+	void borrarDeLaEmpresa(UUID empresaId);
+
 	/** Casi siempre se necesita la empresa (para la respuesta o para comprobar la propiedad de la oferta). */
 	@Override
 	@EntityGraph(attributePaths = "empresa")
