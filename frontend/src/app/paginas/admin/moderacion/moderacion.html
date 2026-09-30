@@ -1,0 +1,128 @@
+<header class="encabezado">
+  <h1>Moderación</h1>
+  <p>Ofertas denunciadas por los usuarios, de la denuncia más antigua a la más reciente.</p>
+</header>
+
+<div #mensajes class="mensajes" tabindex="-1">
+  <div aria-live="polite">
+    @if (aviso(); as textoAviso) {
+      <p class="aviso aviso-ok">
+        <svg lucideCircleCheck [size]="18"></svg>
+        {{ textoAviso }}
+      </p>
+    }
+  </div>
+  @if (error(); as textoError) {
+    <p class="aviso aviso-error" role="alert">
+      <svg lucideCircleAlert [size]="18"></svg>
+      {{ textoError }}
+    </p>
+  }
+</div>
+
+@if (denuncias.hasValue()) {
+  @if (denuncias.value().content.length) {
+    <p class="total">
+      {{ denuncias.value().page.totalElements }}
+      {{
+        denuncias.value().page.totalElements === 1 ? 'denuncia pendiente' : 'denuncias pendientes'
+      }}
+    </p>
+    <ul class="lista" [attr.aria-busy]="denuncias.isLoading()">
+      @for (denuncia of denuncias.value().content; track denuncia.id) {
+        <li class="tarjeta denuncia">
+          <div class="cabecera">
+            <div>
+              <h2>{{ denuncia.oferta.titulo }}</h2>
+              <p class="empresa">
+                {{ denuncia.oferta.empresaNombre }} ·
+                <a [href]="'mailto:' + denuncia.oferta.empresaEmail">{{
+                  denuncia.oferta.empresaEmail
+                }}</a>
+              </p>
+            </div>
+            <p class="fecha">denunciada <app-fecha [iso]="denuncia.fechaCreacion" /></p>
+          </div>
+
+          <p class="motivo">
+            <svg lucideFlag [size]="16"></svg>
+            {{ textoMotivo[denuncia.motivo] }}
+          </p>
+          @if (denuncia.detalle) {
+            <blockquote>{{ denuncia.detalle }}</blockquote>
+          }
+          <p class="denunciante">
+            Denunciada por
+            @if (denuncia.emailDenunciante; as email) {
+              <a [href]="'mailto:' + email">{{ email }}</a>
+            } @else {
+              una cuenta que ya no existe
+            }
+          </p>
+
+          <details>
+            <summary>Ver el texto de la oferta</summary>
+            <p class="descripcion">{{ denuncia.oferta.descripcion }}</p>
+          </details>
+
+          <div class="acciones">
+            <button
+              type="button"
+              class="btn btn-peligro btn-pequeno"
+              [disabled]="ocupada() === denuncia.id"
+              (click)="confirmacion.set({ accion: 'retirar', denuncia })"
+            >
+              Retirar oferta
+            </button>
+            <button
+              type="button"
+              class="btn btn-secundario btn-pequeno"
+              [disabled]="ocupada() === denuncia.id"
+              (click)="desestimar(denuncia)"
+            >
+              Desestimar
+            </button>
+            <button
+              type="button"
+              class="btn btn-fantasma btn-pequeno suspender"
+              [disabled]="ocupada() === denuncia.id"
+              (click)="confirmacion.set({ accion: 'suspender', denuncia })"
+            >
+              Suspender empresa
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+    <app-paginacion [pagina]="pagina()" [totalPaginas]="denuncias.value().page.totalPages" />
+  } @else {
+    <app-estado-vacio
+      titulo="No hay denuncias pendientes"
+      texto="Cuando alguien denuncie una oferta aparecerá aquí y te llegará un correo."
+    />
+  }
+} @else if (denuncias.error()) {
+  <div class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    <div class="aviso-cuerpo">
+      <p>No hemos podido cargar las denuncias.</p>
+      <button type="button" class="btn btn-secundario btn-pequeno" (click)="denuncias.reload()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+} @else {
+  <p class="ayuda" role="status">Cargando las denuncias…</p>
+}
+
+<app-dialogo-confirmacion
+  id="moderar"
+  [abierto]="confirmacion() !== null"
+  [titulo]="tituloConfirmacion()"
+  [texto]="textoConfirmacion()"
+  [textoConfirmar]="confirmacion()?.accion === 'suspender' ? 'Suspender cuenta' : 'Retirar oferta'"
+  [peligro]="true"
+  [ocupado]="ocupada() !== null"
+  (confirmar)="confirmar()"
+  (cancelar)="confirmacion.set(null)"
+/>

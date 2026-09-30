@@ -70,6 +70,17 @@ describe('Mis ofertas', () => {
     expect(filas[1].textContent).toContain('Reabrir');
   });
 
+  it('una oferta retirada por moderación lo explica y no se puede editar ni reabrir', async () => {
+    await crear([fila({ id: 'o1', titulo: 'Gana dinero fácil', estado: 'RETIRADA' })]);
+
+    const retirada = pagina().querySelector('li.fila')!;
+    expect(retirada.querySelector('.estado')!.textContent).toContain('Retirada');
+    expect(retirada.textContent).toContain('La hemos retirado por incumplir las normas');
+    expect(retirada.querySelector('a[href="/empresa/ofertas/o1/editar"]')).toBeNull();
+    expect(retirada.querySelector('button')).toBeNull();
+    expect(retirada.querySelector('a[href="/empresa/ofertas/o1/candidaturas"]')).not.toBeNull();
+  });
+
   it('cierra una oferta abierta y recarga la lista', async () => {
     await crear([fila({ id: 'o1', titulo: 'Backend Java' })]);
 

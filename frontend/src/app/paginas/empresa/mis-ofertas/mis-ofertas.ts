@@ -12,7 +12,7 @@ import { Salario } from '../../../compartido/salario/salario';
 import { OfertaConCandidaturas, Pagina } from '../../../core/api/modelos';
 import { PanelEmpresaApi } from '../../../core/api/panel-empresa-api';
 import { mensajeDeError } from '../../../core/api/problema';
-import { TEXTO_MODALIDAD } from '../../../core/textos';
+import { TEXTO_ESTADO_OFERTA, TEXTO_MODALIDAD } from '../../../core/textos';
 
 const TAMANO_PAGINA = 10;
 
@@ -50,6 +50,7 @@ export class MisOfertas {
   protected readonly cambiando = signal<string | null>(null);
 
   protected readonly textoModalidad = TEXTO_MODALIDAD;
+  protected readonly textoEstado = TEXTO_ESTADO_OFERTA;
 
   protected cambiarEstado({ oferta }: OfertaConCandidaturas): void {
     const nuevo = oferta.estado === 'ABIERTA' ? 'CERRADA' : 'ABIERTA';

@@ -1,4 +1,10 @@
-import { EstadoCandidatura, EstadoOferta, Modalidad, TipoContrato } from './api/modelos';
+import {
+  EstadoCandidatura,
+  EstadoOferta,
+  Modalidad,
+  MotivoDenuncia,
+  TipoContrato,
+} from './api/modelos';
 
 /** Textos para mostrar los valores que devuelve la API (ver "Textos" en la guía de diseño). */
 
@@ -18,6 +24,14 @@ export const TEXTO_TIPO_CONTRATO: Record<TipoContrato, string> = {
 export const TEXTO_ESTADO_OFERTA: Record<EstadoOferta, string> = {
   ABIERTA: 'Abierta',
   CERRADA: 'Cerrada',
+  RETIRADA: 'Retirada',
+};
+
+export const TEXTO_MOTIVO_DENUNCIA: Record<MotivoDenuncia, string> = {
+  FRAUDE: 'Parece una estafa o pide dinero',
+  DISCRIMINACION: 'Discrimina por edad, sexo, origen u otro motivo',
+  ENGANOSA: 'Las condiciones no son las que dice',
+  OTRO: 'Otro motivo',
 };
 
 /** El candidato ve un lenguaje más cercano: "No seleccionada" en lugar de "Rechazada". */

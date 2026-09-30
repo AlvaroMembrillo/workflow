@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import com.alvaro.workflow.TestcontainersConfiguration;
+import com.jayway.jsonpath.JsonPath;
 import com.alvaro.workflow.correo.BuzonDePrueba;
 import com.alvaro.workflow.correo.CorreoDePruebaConfiguration;
 
@@ -84,6 +85,20 @@ class DatosDeDemostracionTests {
 		assertThat(buzon.para("ana@demo.test")).extracting("asunto").contains(
 				"Tu candidatura a Desarrollador/a Java Backend está en revisión",
 				"Tu candidatura a Desarrollador/a Frontend Angular ha sido seleccionada");
+	}
+
+	@Test
+	void creaLaCuentaDeModeracionYUnaDenunciaPendienteParaRevisar() throws Exception {
+		assertThat(contar("select count(*) from usuarios where rol = 'ADMIN' and email = 'admin@demo.test'")).isEqualTo(1);
+		assertThat(contar("select count(*) from denuncias where estado = 'PENDIENTE'")).isEqualTo(1);
+
+		String token = JsonPath.read(mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"email": "admin@demo.test", "password": "%s"}
+						""".formatted(DatosDeDemostracion.PASSWORD))
+				.exchange().getResponse().getContentAsString(), "$.accessToken");
+		assertThat(mvc.get().uri("/api/admin/denuncias").header("Authorization", "Bearer " + token).exchange())
+				.bodyJson().extractingPath("$.content[0].oferta.titulo").isEqualTo("Product manager freelance");
 	}
 
 	@Test

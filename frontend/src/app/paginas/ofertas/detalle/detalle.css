@@ -143,6 +143,29 @@ textarea.input {
   line-height: 1.65;
 }
 
+.denunciar {
+  margin-top: var(--space-4);
+}
+
+.enlace-denuncia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 1.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.enlace-denuncia:hover {
+  color: var(--ink);
+}
+
 .aviso-cuerpo {
   display: grid;
   gap: var(--space-2);

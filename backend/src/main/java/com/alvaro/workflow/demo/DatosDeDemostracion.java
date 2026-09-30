@@ -22,6 +22,9 @@ import com.alvaro.workflow.candidatura.dto.CandidaturaRequest;
 import com.alvaro.workflow.cv.CurriculumService;
 import com.alvaro.workflow.empresa.EmpresaService;
 import com.alvaro.workflow.empresa.dto.EmpresaRequest;
+import com.alvaro.workflow.moderacion.DenunciaService;
+import com.alvaro.workflow.moderacion.MotivoDenuncia;
+import com.alvaro.workflow.moderacion.dto.DenunciaRequest;
 import com.alvaro.workflow.oferta.Modalidad;
 import com.alvaro.workflow.oferta.OfertaService;
 import com.alvaro.workflow.oferta.TipoContrato;
@@ -54,6 +57,7 @@ public class DatosDeDemostracion {
 	private final OfertaService ofertaService;
 	private final CandidaturaService candidaturaService;
 	private final CurriculumService curriculumService;
+	private final DenunciaService denunciaService;
 	private final JdbcTemplate jdbc;
 
 	private record EmpresaDemo(String email, String nombre, String ubicacion, String web, String descripcion) {
@@ -185,7 +189,8 @@ public class DatosDeDemostracion {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void cargar() {
-		if (usuarios.count() > 0) {
+		// La cuenta de administrador se crea antes, al arrancar, y no cuenta como "datos"
+		if (usuarios.countByRolNot(Rol.ADMIN) > 0) {
 			log.info("La base de datos ya tiene usuarios: no se cargan los datos de demostración");
 			return;
 		}
@@ -231,6 +236,11 @@ public class DatosDeDemostracion {
 					hace(candidatura.hace()), hace(candidatura.revision()), hace(candidatura.resolucion()),
 					hace(ultimoCambio(candidatura)), id);
 		}
+
+		// Una denuncia pendiente, para que el panel de moderación tenga algo que revisar
+		denunciaService.denunciar(idPorEmail.get("luis@demo.test"), ofertaPorClave.get("pm"),
+				new DenunciaRequest(MotivoDenuncia.ENGANOSA,
+						"En la entrevista me dijeron que en realidad es jornada completa como falso autónomo."));
 
 		log.info("Cargados los datos de demostración: {} empresas, {} ofertas, {} candidatos y {} candidaturas",
 				EMPRESAS.size(), OFERTAS.size(), CANDIDATOS.size(), CANDIDATURAS.size());

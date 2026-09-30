@@ -76,6 +76,11 @@ describe('guards', () => {
       configurar('EMPRESA');
       expect(ejecutar(soloSinSesion, '/entrar')).toBe('/empresa');
     });
+
+    it('con sesión de administrador lleva al panel de moderación', () => {
+      configurar('ADMIN');
+      expect(ejecutar(soloSinSesion, '/entrar')).toBe('/admin');
+    });
   });
 
   describe('destinoTrasAcceso', () => {

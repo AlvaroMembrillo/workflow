@@ -54,6 +54,10 @@ public class Usuario {
 	@Column(name = "avisos_por_correo", nullable = false)
 	private boolean avisosPorCorreo;
 
+	/** Cuándo suspendió la cuenta un administrador; null si no está suspendida. */
+	@Column(name = "suspendido_en")
+	private Instant suspendidoEn;
+
 	public Usuario(String email, String passwordHash, String nombre, Rol rol) {
 		this.email = email;
 		this.passwordHash = passwordHash;
@@ -76,6 +80,17 @@ public class Usuario {
 	public void verificarEmail() {
 		if (emailVerificadoEn == null) {
 			emailVerificadoEn = Instant.now();
+		}
+	}
+
+	public boolean isSuspendido() {
+		return suspendidoEn != null;
+	}
+
+	/** Un administrador suspende la cuenta: deja de poder iniciar sesión. */
+	public void suspender() {
+		if (suspendidoEn == null) {
+			suspendidoEn = Instant.now();
 		}
 	}
 

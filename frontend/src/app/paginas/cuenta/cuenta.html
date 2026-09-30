@@ -52,28 +52,30 @@
     </section>
   }
 
-  <section class="tarjeta bloque" aria-labelledby="titulo-avisos">
-    <h2 id="titulo-avisos">Avisos por correo</h2>
-    <label class="casilla">
-      <input
-        type="checkbox"
-        [checked]="usuario.avisosPorCorreo"
-        [disabled]="guardandoAvisos()"
-        (change)="cambiarAvisos($event)"
-      />
-      <span>
-        @if (usuario.rol === 'EMPRESA') {
-          Avisarme cuando alguien se inscriba en una de mis ofertas
-        } @else {
-          Avisarme cuando una empresa revise o responda a mi candidatura
-        }
-      </span>
-    </label>
-    <p class="ayuda">
-      Los correos sobre tu cuenta (confirmar el email, cambiar la contraseña) se envían siempre.
-    </p>
-    <p class="ayuda" role="status">{{ avisoAvisos() }}</p>
-  </section>
+  @if (usuario.rol !== 'ADMIN') {
+    <section class="tarjeta bloque" aria-labelledby="titulo-avisos">
+      <h2 id="titulo-avisos">Avisos por correo</h2>
+      <label class="casilla">
+        <input
+          type="checkbox"
+          [checked]="usuario.avisosPorCorreo"
+          [disabled]="guardandoAvisos()"
+          (change)="cambiarAvisos($event)"
+        />
+        <span>
+          @if (usuario.rol === 'EMPRESA') {
+            Avisarme cuando alguien se inscriba en una de mis ofertas
+          } @else {
+            Avisarme cuando una empresa revise o responda a mi candidatura
+          }
+        </span>
+      </label>
+      <p class="ayuda">
+        Los correos sobre tu cuenta (confirmar el email, cambiar la contraseña) se envían siempre.
+      </p>
+      <p class="ayuda" role="status">{{ avisoAvisos() }}</p>
+    </section>
+  }
 
   <section class="tarjeta bloque" aria-labelledby="titulo-password">
     <h2 id="titulo-password">Cambiar la contraseña</h2>

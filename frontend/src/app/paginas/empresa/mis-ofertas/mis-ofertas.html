@@ -24,7 +24,7 @@
   @if (ofertas.value().content.length) {
     <ul class="lista" [attr.aria-busy]="ofertas.isLoading()">
       @for (fila of ofertas.value().content; track fila.oferta.id) {
-        <li class="tarjeta fila" [class.cerrada]="fila.oferta.estado === 'CERRADA'">
+        <li class="tarjeta fila" [class.cerrada]="fila.oferta.estado !== 'ABIERTA'">
           <div class="datos">
             <div class="titulo">
               <h2>
@@ -32,8 +32,12 @@
                   fila.oferta.titulo
                 }}</a>
               </h2>
-              <span class="estado" [class.abierta]="fila.oferta.estado === 'ABIERTA'">
-                {{ fila.oferta.estado === 'ABIERTA' ? 'Abierta' : 'Cerrada' }}
+              <span
+                class="estado"
+                [class.abierta]="fila.oferta.estado === 'ABIERTA'"
+                [class.retirada]="fila.oferta.estado === 'RETIRADA'"
+              >
+                {{ textoEstado[fila.oferta.estado] }}
               </span>
             </div>
             <p class="meta">
@@ -60,20 +64,28 @@
               [routerLink]="['/empresa/ofertas', fila.oferta.id, 'candidaturas']"
               ><svg lucideUsers [size]="16"></svg>Candidaturas</a
             >
-            <a
-              class="btn btn-fantasma btn-pequeno"
-              [routerLink]="['/empresa/ofertas', fila.oferta.id, 'editar']"
-              ><svg lucidePencil [size]="16"></svg>Editar</a
-            >
-            <button
-              type="button"
-              class="btn btn-fantasma btn-pequeno"
-              [disabled]="cambiando() === fila.oferta.id"
-              (click)="cambiarEstado(fila)"
-            >
-              {{ fila.oferta.estado === 'ABIERTA' ? 'Cerrar' : 'Reabrir' }}
-            </button>
+            @if (fila.oferta.estado !== 'RETIRADA') {
+              <a
+                class="btn btn-fantasma btn-pequeno"
+                [routerLink]="['/empresa/ofertas', fila.oferta.id, 'editar']"
+                ><svg lucidePencil [size]="16"></svg>Editar</a
+              >
+              <button
+                type="button"
+                class="btn btn-fantasma btn-pequeno"
+                [disabled]="cambiando() === fila.oferta.id"
+                (click)="cambiarEstado(fila)"
+              >
+                {{ fila.oferta.estado === 'ABIERTA' ? 'Cerrar' : 'Reabrir' }}
+              </button>
+            }
           </div>
+          @if (fila.oferta.estado === 'RETIRADA') {
+            <p class="retirada-nota">
+              La hemos retirado por incumplir las normas de publicación. No se puede editar ni
+              volver a abrir.
+            </p>
+          }
         </li>
       }
     </ul>

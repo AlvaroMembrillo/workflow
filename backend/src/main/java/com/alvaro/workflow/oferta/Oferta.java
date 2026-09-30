@@ -78,6 +78,7 @@ public class Oferta {
 	}
 
 	public void actualizar(DatosOferta datos) {
+		comprobarQueNoEstaRetirada();
 		this.titulo = datos.titulo();
 		this.descripcion = datos.descripcion();
 		this.ubicacion = datos.ubicacion();
@@ -87,8 +88,25 @@ public class Oferta {
 		this.salarioMaximo = datos.salarioMaximo();
 	}
 
+	/** La empresa abre o cierra su oferta. */
 	public void cambiarEstado(EstadoOferta estado) {
+		comprobarQueNoEstaRetirada();
 		this.estado = estado;
+	}
+
+	/** Moderación retira la oferta. No tiene vuelta atrás para la empresa. */
+	public void retirar() {
+		this.estado = EstadoOferta.RETIRADA;
+	}
+
+	public boolean estaRetirada() {
+		return estado == EstadoOferta.RETIRADA;
+	}
+
+	private void comprobarQueNoEstaRetirada() {
+		if (estaRetirada()) {
+			throw new OfertaRetiradaException();
+		}
 	}
 
 	public boolean estaAbierta() {

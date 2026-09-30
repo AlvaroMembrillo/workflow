@@ -97,6 +97,27 @@ describe('Detalle de oferta', () => {
     expect(inscribirme.getAttribute('href')).toBe('/registro?volver=%2Fofertas%2Foferta-1');
   });
 
+  it('sin sesión, denunciar la oferta lleva a entrar y después vuelve a la oferta', async () => {
+    configurar();
+    await crear();
+
+    const enlace = pagina().querySelector<HTMLAnchorElement>('a.enlace-denuncia')!;
+    expect(enlace.getAttribute('href')).toBe('/entrar?volver=%2Fofertas%2Foferta-1');
+    expect(pagina().querySelector('app-dialogo-denuncia')).toBeNull();
+  });
+
+  it('con sesión, "Denunciar esta oferta" abre el formulario de denuncia', async () => {
+    configurar('CANDIDATO');
+    await crear(ofertaDePrueba(), NO_INSCRITO);
+
+    pagina().querySelector<HTMLButtonElement>('button.enlace-denuncia')!.click();
+    await fixture.whenStable();
+
+    expect(pagina().querySelector<HTMLDialogElement>('app-dialogo-denuncia dialog')!.open).toBe(
+      true,
+    );
+  });
+
   it('el candidato se inscribe con una carta y ve la confirmación', async () => {
     configurar('CANDIDATO');
     await crear(ofertaDePrueba(), NO_INSCRITO);

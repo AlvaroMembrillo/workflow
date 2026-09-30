@@ -79,6 +79,17 @@ h2 a:hover {
   color: var(--ok-fg);
 }
 
+.estado.retirada {
+  background: var(--no-bg);
+  color: var(--no-fg);
+}
+
+.retirada-nota {
+  grid-column: 1 / -1;
+  font-size: 0.875rem;
+  color: var(--no-fg);
+}
+
 .meta {
   font-size: 0.875rem;
   color: var(--muted);

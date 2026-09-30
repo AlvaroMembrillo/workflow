@@ -38,6 +38,7 @@ import { PanelEmpresaApi } from '../../../core/api/panel-empresa-api';
 import { mensajeDeError } from '../../../core/api/problema';
 import { guardarFichero } from '../../../core/descargas';
 import { enfocarTrasRender } from '../../../core/foco';
+import { TEXTO_ESTADO_OFERTA } from '../../../core/textos';
 
 export type Vista = 'sin-responder' | 'en-revision' | 'decididas' | 'todas';
 
@@ -114,6 +115,7 @@ export class CandidaturasRecibidas {
   readonly pagina = input<number, string | undefined>(1, { transform: leerPagina });
 
   protected readonly pestanas = PESTANAS;
+  protected readonly textoEstadoOferta = TEXTO_ESTADO_OFERTA;
   protected readonly pestanaActual = computed(() =>
     PESTANAS.find((pestana) => pestana.vista === this.vista())!,
   );

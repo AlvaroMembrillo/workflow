@@ -16,6 +16,7 @@ import {
   LucideCircleAlert,
   LucideCircleCheck,
   LucideFileText,
+  LucideFlag,
   LucideLock,
   LucideMailWarning,
 } from '@lucide/angular';
@@ -30,6 +31,7 @@ import { MiCandidatura, Oferta } from '../../../core/api/modelos';
 import { mensajeDeError } from '../../../core/api/problema';
 import { Cuenta } from '../../../core/auth/cuenta';
 import { Sesion } from '../../../core/auth/sesion';
+import { DialogoDenuncia } from './dialogo-denuncia';
 import {
   TEXTO_ESTADO_PARA_CANDIDATO,
   TEXTO_MODALIDAD,
@@ -47,9 +49,11 @@ export const LONGITUD_MAXIMA_CARTA = 5000;
     Fecha,
     EstadoVacio,
     CvCandidato,
+    DialogoDenuncia,
     LucideCircleAlert,
     LucideCircleCheck,
     LucideFileText,
+    LucideFlag,
     LucideLock,
     LucideMailWarning,
   ],
@@ -94,6 +98,7 @@ export class Detalle {
   protected readonly rutaActual = computed(() => `/ofertas/${this.id()}`);
 
   protected readonly mostrarCarta = signal(false);
+  protected readonly denunciando = signal(false);
   protected readonly carta = signal('');
   protected readonly enviando = signal(false);
   protected readonly error = signal<string | null>(null);

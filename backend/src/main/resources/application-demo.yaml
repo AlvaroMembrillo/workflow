@@ -1,6 +1,10 @@
 # application-demo.yml — demostración autocontenida con docker-compose.demo.yml
 # La base de datos se indica con SPRING_DATASOURCE_URL, _USERNAME y _PASSWORD.
 app:
+  admin:
+    # Cuenta de moderación de la demo (ver README). En producción se indica con ADMIN_EMAIL y ADMIN_PASSWORD
+    email: admin@demo.test
+    password: demo-workflow
   limites:
     # Todo el que prueba la demo llega desde la misma IP (la de Docker), y los tests de extremo a
     # extremo crean decenas de cuentas por ejecución

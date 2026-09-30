@@ -145,8 +145,30 @@
     <section class="descripcion" aria-labelledby="titulo-descripcion">
       <h2 id="titulo-descripcion">Descripción</h2>
       <p class="texto">{{ o.descripcion }}</p>
+
+      <p class="denunciar">
+        @if (sesion.iniciada()) {
+          <button type="button" class="enlace-denuncia" (click)="denunciando.set(true)">
+            <svg lucideFlag [size]="16"></svg>
+            Denunciar esta oferta
+          </button>
+        } @else {
+          <a routerLink="/entrar" [queryParams]="{ volver: rutaActual() }" class="enlace-denuncia">
+            <svg lucideFlag [size]="16"></svg>
+            Entra para denunciar esta oferta
+          </a>
+        }
+      </p>
     </section>
   </article>
+
+  @if (sesion.iniciada()) {
+    <app-dialogo-denuncia
+      [ofertaId]="o.id"
+      [abierto]="denunciando()"
+      (cerrar)="denunciando.set(false)"
+    />
+  }
 } @else if (noEncontrada()) {
   <app-estado-vacio
     titulo="Esta oferta no existe"

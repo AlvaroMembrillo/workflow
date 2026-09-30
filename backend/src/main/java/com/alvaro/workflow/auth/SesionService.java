@@ -53,6 +53,9 @@ public class SesionService {
 		Instant ahora = Instant.now();
 		if (tokens.canjear(hash, ahora) == 1) {
 			TokenDeRefresco canjeado = tokens.findByHash(hash).orElseThrow(SesionNoValidaException::new);
+			if (canjeado.getUsuario().isSuspendido()) {
+				throw new SesionNoValidaException();
+			}
 			return new Renovacion(canjeado.getUsuario(), crear(canjeado.getUsuario(), canjeado.getFamilia()));
 		}
 

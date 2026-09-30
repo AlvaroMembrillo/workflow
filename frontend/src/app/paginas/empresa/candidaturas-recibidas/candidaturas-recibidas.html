@@ -12,15 +12,23 @@
       @let o = oferta.value().oferta;
       <div class="titulo">
         <h1>{{ o.titulo }}</h1>
-        <span class="estado-oferta" [class.abierta]="o.estado === 'ABIERTA'">
-          {{ o.estado === 'ABIERTA' ? 'Abierta' : 'Cerrada' }}
+        <span
+          class="estado-oferta"
+          [class.abierta]="o.estado === 'ABIERTA'"
+          [class.retirada]="o.estado === 'RETIRADA'"
+        >
+          {{ textoEstadoOferta[o.estado] }}
         </span>
       </div>
       <p class="meta">
         {{ oferta.value().candidaturas.total }}
-        {{ oferta.value().candidaturas.total === 1 ? 'candidatura' : 'candidaturas' }} ·
-        <a [routerLink]="['/ofertas', o.id]">Ver la oferta publicada</a> ·
-        <a [routerLink]="['/empresa/ofertas', o.id, 'editar']">Editar</a>
+        {{ oferta.value().candidaturas.total === 1 ? 'candidatura' : 'candidaturas' }}
+        @if (o.estado === 'RETIRADA') {
+          · Retirada por incumplir las normas de publicación
+        } @else {
+          · <a [routerLink]="['/ofertas', o.id]">Ver la oferta publicada</a> ·
+          <a [routerLink]="['/empresa/ofertas', o.id, 'editar']">Editar</a>
+        }
       </p>
     } @else {
       <h1>Candidaturas recibidas</h1>

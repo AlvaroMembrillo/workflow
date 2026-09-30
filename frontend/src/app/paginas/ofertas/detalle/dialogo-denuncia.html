@@ -1,0 +1,70 @@
+<dialog #dialogo aria-labelledby="denuncia-titulo" (close)="cerrar.emit()">
+  @if (enviada()) {
+    <div class="enviada" role="status">
+      <svg lucideCircleCheck [size]="28"></svg>
+      <h2 id="denuncia-titulo">Gracias por avisar</h2>
+      <p>Vamos a revisar la oferta. Si incumple las normas, la retiraremos.</p>
+      <div class="acciones">
+        <button type="button" class="btn btn-primario" autofocus (click)="dialogo.close()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  } @else {
+    <form (submit)="enviar($event)">
+      <h2 id="denuncia-titulo">Denunciar esta oferta</h2>
+      <p class="ayuda">
+        La revisará una persona del equipo. La empresa no sabrá quién ha denunciado.
+      </p>
+
+      @if (error(); as mensajeError) {
+        <p class="aviso aviso-error" role="alert">
+          <svg lucideCircleAlert [size]="18"></svg>
+          {{ mensajeError }}
+        </p>
+      }
+
+      <fieldset [attr.aria-describedby]="intentado() && !motivo() ? 'motivo-error' : null">
+        <legend>¿Qué pasa con esta oferta?</legend>
+        @for (opcion of motivos; track opcion) {
+          <label class="opcion">
+            <input
+              type="radio"
+              name="motivo"
+              [value]="opcion"
+              [checked]="motivo() === opcion"
+              (change)="motivo.set(opcion)"
+            />
+            <span>{{ textoMotivo[opcion] }}</span>
+          </label>
+        }
+        @if (intentado() && !motivo()) {
+          <p id="motivo-error" class="error-campo">Elige un motivo</p>
+        }
+      </fieldset>
+
+      <div class="campo">
+        <label for="denuncia-detalle">Cuéntanos más <span class="opcional">(opcional)</span></label>
+        <textarea
+          id="denuncia-detalle"
+          name="detalle"
+          class="input"
+          rows="4"
+          [maxlength]="longitudMaxima"
+          aria-describedby="denuncia-detalle-ayuda"
+          [(ngModel)]="detalle"
+        ></textarea>
+        <p id="denuncia-detalle-ayuda" class="ayuda">
+          {{ detalle().length }} de {{ longitudMaxima }} caracteres
+        </p>
+      </div>
+
+      <div class="acciones">
+        <button type="button" class="btn btn-fantasma" (click)="dialogo.close()">Cancelar</button>
+        <button type="submit" class="btn btn-peligro" [disabled]="enviando()">
+          {{ enviando() ? 'Enviando…' : 'Enviar denuncia' }}
+        </button>
+      </div>
+    </form>
+  }
+</dialog>
