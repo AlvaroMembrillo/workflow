@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
-    "informe": "playwright show-report"
+    "informe": "playwright show-report",
+    "capturas": "node scripts/capturas.ts"
   },
   "engines": {
     "node": "^22.22.3 || ^24.15.0 || >=26.0.0"

@@ -27,6 +27,18 @@ estados. Estas cuentas tienen la contraseña `demo-workflow`:
 La documentación de la API está en http://localhost:8000/swagger-ui.html. Para borrar los datos de la
 demo: `docker compose -f docker-compose.demo.yml down -v`.
 
+## Capturas
+
+| Buscador con filtros | Ficha de una oferta |
+|---|---|
+| ![Buscador de ofertas filtrado por modalidad híbrida, con el salario en cada tarjeta](docs/capturas/buscador.png) | ![Ficha de una oferta con el salario completo, la modalidad, el contrato y el botón para inscribirse](docs/capturas/ficha-oferta.png) |
+| **Mis candidaturas** | **Candidaturas recibidas** |
+| ![Candidaturas de una candidata con el progreso de cada una y la fecha de cada paso](docs/capturas/mis-candidaturas.png) | ![Panel de empresa con las candidaturas de una oferta agrupadas por estado y un aviso de 7 días sin respuesta](docs/capturas/candidaturas-recibidas.png) |
+
+<p align="center">
+  <img src="docs/capturas/movil-filtros.png" width="300" alt="Hoja de filtros en un teléfono con el tema oscuro">
+</p>
+
 ## Stack
 
 - **Backend:** Java 25, Spring Boot 4, Spring Security (OAuth2 Resource Server), Spring Data JPA, Flyway, MapStruct
@@ -61,6 +73,13 @@ axe-core en tema claro y oscuro. Crean sus propios usuarios, así que se pueden 
 ```bash
 docker compose -f docker-compose.demo.yml up --build -d --wait
 cd e2e && npm install && npx playwright install chromium && npm test
+```
+
+Las capturas de este README salen de la demo recién creada (sin los usuarios de los tests):
+
+```bash
+docker compose -f docker-compose.demo.yml down -v && docker compose -f docker-compose.demo.yml up --build -d --wait
+cd e2e && npm run capturas
 ```
 
 ## API
