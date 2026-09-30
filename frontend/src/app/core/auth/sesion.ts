@@ -120,6 +120,12 @@ export class Sesion {
     }
   }
 
+  /** La cuenta se ha borrado: ya no hay sesión que cerrar en el servidor, solo olvidarla aquí. */
+  olvidar(): void {
+    this.cerradaPorCaducidad.set(false);
+    this.establecer(null);
+  }
+
   /**
    * La sesión ya no vale: ha caducado o el backend la ha rechazado. La cierra y vuelve a evaluar la ruta
    * actual: si necesitaba sesión, su guard lleva a la pantalla de acceso y después se vuelve a esta página.

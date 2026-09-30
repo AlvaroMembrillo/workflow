@@ -1,0 +1,42 @@
+<header>
+  <h1>Aviso legal</h1>
+  <p>Quién está detrás de este portal.</p>
+</header>
+
+<section aria-labelledby="titular">
+  <h2 id="titular">Titular del sitio web</h2>
+  <dl>
+    <dt>Titular</dt>
+    <dd>{{ titular.nombre() }}</dd>
+    <dt>NIF</dt>
+    <dd>{{ titular.nif() }}</dd>
+    <dt>Domicilio</dt>
+    <dd>{{ titular.domicilio() }}</dd>
+    <dt>Contacto</dt>
+    <dd>
+      <a [href]="'mailto:' + titular.contacto()">{{ titular.contacto() }}</a>
+    </dd>
+  </dl>
+</section>
+
+<section aria-labelledby="contenidos">
+  <h2 id="contenidos">Contenidos</h2>
+  <p>
+    Las ofertas y los perfiles de empresa los publican las propias empresas, que son responsables de
+    su contenido. Si ves una oferta que incumple las
+    <a routerLink="/condiciones">condiciones de uso</a>, puedes denunciarla desde la propia oferta.
+  </p>
+</section>
+
+<section aria-labelledby="codigo">
+  <h2 id="codigo">Código abierto</h2>
+  <p>
+    El código de Workflow es abierto y se distribuye con licencia MIT. Está disponible en
+    <a href="https://github.com/AlvaroMembrillo/workflow" rel="noopener">GitHub</a>.
+  </p>
+</section>
+
+<p class="otras">
+  Ver también la <a routerLink="/privacidad">política de privacidad</a> y las
+  <a routerLink="/condiciones">condiciones de uso</a>.
+</p>

@@ -47,7 +47,7 @@ public abstract class IntegrationTestBase {
 
 	protected MvcTestResult registrar(String email, String rol, String nombre) {
 		return post("/api/auth/registro", null, """
-				{"email": "%s", "password": "%s", "nombre": "%s", "rol": "%s"}
+				{"email": "%s", "password": "%s", "nombre": "%s", "rol": "%s", "aceptaCondiciones": true}
 				""".formatted(email, PASSWORD, nombre, rol));
 	}
 

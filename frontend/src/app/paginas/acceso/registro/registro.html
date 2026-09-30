@@ -98,6 +98,27 @@
       }
     </div>
 
+    <div class="campo">
+      <label class="acepto">
+        <input
+          id="aceptaCondiciones"
+          type="checkbox"
+          formControlName="aceptaCondiciones"
+          [attr.aria-invalid]="tieneError('aceptaCondiciones')"
+          [attr.aria-describedby]="tieneError('aceptaCondiciones') ? 'acepto-error' : null"
+        />
+        <span>
+          He leído y acepto las
+          <a routerLink="/condiciones" target="_blank">condiciones de uso</a> y la
+          <a routerLink="/privacidad" target="_blank">política de privacidad</a>
+          <span class="solo-lectores"> (se abren en otra pestaña)</span>
+        </span>
+      </label>
+      @if (tieneError('aceptaCondiciones')) {
+        <p id="acepto-error" class="error-campo">{{ mensaje('aceptaCondiciones') }}</p>
+      }
+    </div>
+
     <button type="submit" class="btn btn-primario btn-bloque" [disabled]="enviando()">
       {{ enviando() ? 'Creando la cuenta…' : 'Crear cuenta' }}
     </button>

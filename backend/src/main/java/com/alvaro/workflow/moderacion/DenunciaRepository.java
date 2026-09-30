@@ -25,4 +25,8 @@ interface DenunciaRepository extends JpaRepository<Denuncia, UUID> {
 
 	List<Denuncia> findByOfertaEmpresaIdAndEstado(UUID empresaId, EstadoDenuncia estado);
 
+	/** Las denuncias que ha hecho un usuario, para la copia de sus datos. */
+	@EntityGraph(attributePaths = "oferta")
+	List<Denuncia> findByDenuncianteIdOrderByFechaCreacionDesc(UUID denuncianteId);
+
 }

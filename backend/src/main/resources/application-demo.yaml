@@ -1,6 +1,10 @@
 # application-demo.yml — demostración autocontenida con docker-compose.demo.yml
 # La base de datos se indica con SPRING_DATASOURCE_URL, _USERNAME y _PASSWORD.
 app:
+  legal:
+    titular: Workflow (proyecto de demostración)
+    nif: no aplica
+    domicilio: no aplica
   admin:
     # Cuenta de moderación de la demo (ver README). En producción se indica con ADMIN_EMAIL y ADMIN_PASSWORD
     email: admin@demo.test

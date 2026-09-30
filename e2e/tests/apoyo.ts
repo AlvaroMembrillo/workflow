@@ -28,7 +28,7 @@ export async function crearCuenta(
   const email = `${unico('e2e')}@e2e.test`;
   const password = 'clave-e2e-segura';
   const respuesta = await request.post('/api/auth/registro', {
-    data: { email, password, nombre, rol },
+    data: { email, password, nombre, rol, aceptaCondiciones: true },
   });
   expect(respuesta.status()).toBe(201);
   const { accessToken } = (await respuesta.json()) as { accessToken: string };

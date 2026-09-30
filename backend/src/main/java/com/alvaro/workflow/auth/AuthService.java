@@ -65,8 +65,10 @@ public class AuthService {
 			throw new EmailYaRegistradoException(email);
 		}
 
-		Usuario usuario = usuarios.save(new Usuario(
-				email, passwordEncoder.encode(request.password()), request.nombre().strip(), request.rol()));
+		Usuario usuario = new Usuario(
+				email, passwordEncoder.encode(request.password()), request.nombre().strip(), request.rol());
+		usuario.aceptarCondiciones();
+		usuario = usuarios.save(usuario);
 		if (usuario.getRol() == Rol.EMPRESA) {
 			empresaService.crearPerfil(usuario);
 		}

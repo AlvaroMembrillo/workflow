@@ -113,7 +113,7 @@ class LimitesIntegrationTests extends IntegrationTestBase {
 
 	private MvcTestResult registrarDesde(String ip) {
 		return postDesde(ip, "/api/auth/registro", """
-				{"email": "%s", "password": "%s", "nombre": "Ana García", "rol": "CANDIDATO"}
+				{"email": "%s", "password": "%s", "nombre": "Ana García", "rol": "CANDIDATO", "aceptaCondiciones": true}
 				""".formatted(emailUnico(), PASSWORD));
 	}
 

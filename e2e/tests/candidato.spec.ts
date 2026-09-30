@@ -18,6 +18,7 @@ test('un candidato se registra desde una oferta, se inscribe, sigue su candidatu
   await page.getByLabel('Nombre', { exact: true }).fill('Candidata E2E');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Contraseña', { exact: true }).fill('clave-e2e-segura');
+  await page.getByLabel(/He leído y acepto/).check();
   await page.getByRole('button', { name: 'Crear cuenta' }).click();
   await expect(page).toHaveURL(new RegExp(`/ofertas/${oferta.id}$`));
 

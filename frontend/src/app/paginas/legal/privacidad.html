@@ -1,0 +1,129 @@
+<header>
+  <h1>Política de privacidad</h1>
+  <p>Qué datos guardamos, para qué y qué puedes hacer con ellos. Sin letra pequeña.</p>
+</header>
+
+<section aria-labelledby="quien">
+  <h2 id="quien">Quién es responsable de tus datos</h2>
+  <dl>
+    <dt>Responsable</dt>
+    <dd>{{ titular.nombre() }}</dd>
+    <dt>NIF</dt>
+    <dd>{{ titular.nif() }}</dd>
+    <dt>Domicilio</dt>
+    <dd>{{ titular.domicilio() }}</dd>
+    <dt>Contacto</dt>
+    <dd>
+      <a [href]="'mailto:' + titular.contacto()">{{ titular.contacto() }}</a>
+    </dd>
+  </dl>
+</section>
+
+<section aria-labelledby="que">
+  <h2 id="que">Qué datos tratamos y para qué</h2>
+  <ul>
+    <li>
+      <strong>Tu cuenta:</strong> nombre, email y contraseña (guardada cifrada: no podemos leerla).
+      Los necesitamos para crear la cuenta y para que entres en ella.
+    </li>
+    <li>
+      <strong>Si buscas empleo:</strong> tu currículum, las cartas de presentación y las ofertas en
+      las que te inscribes, para enviar tu candidatura a la empresa y que sigas su estado.
+    </li>
+    <li>
+      <strong>Si publicas ofertas:</strong> el perfil de tu empresa y tus ofertas, que son públicos,
+      y las candidaturas que recibes.
+    </li>
+    <li>
+      <strong>Correos:</strong> te escribimos para confirmar tu email y cuando pides cambiar la
+      contraseña. También te avisamos de las novedades de tus candidaturas u ofertas, salvo que lo
+      desactives en "Mi cuenta".
+    </li>
+    <li>
+      <strong>Seguridad:</strong> guardamos durante un máximo de una hora la dirección IP desde la
+      que se intenta entrar, crear cuentas o pedir correos, para frenar ataques y abusos.
+    </li>
+    <li>
+      <strong>Denuncias:</strong> si denuncias una oferta, guardamos quién la denuncia y el motivo
+      para que el equipo la revise. La empresa denunciada no sabe quién ha sido.
+    </li>
+  </ul>
+  <p>
+    Tratamos estos datos porque son necesarios para prestarte el servicio que aceptas en las
+    <a routerLink="/condiciones">condiciones de uso</a> y, en el caso de la seguridad y las
+    denuncias, por nuestro interés legítimo en proteger el portal y a sus usuarios. No elaboramos
+    perfiles ni tomamos decisiones automatizadas sobre ti.
+  </p>
+</section>
+
+<section aria-labelledby="quien-ve">
+  <h2 id="quien-ve">Quién ve tus datos</h2>
+  <ul>
+    <li>
+      <strong>Las empresas en cuyas ofertas te inscribes</strong> ven tu nombre, tu email, tu
+      currículum y tu carta de presentación. Ninguna otra empresa puede verlos ni buscarte. Si
+      retiras una candidatura o quitas tu currículum, la empresa deja de poder descargarlo.
+    </li>
+    <li>
+      <strong>Cualquier visitante</strong> ve los perfiles de empresa y las ofertas publicadas.
+    </li>
+    <li>
+      <strong>Nuestros proveedores</strong> de alojamiento y de envío de correo tratan los datos por
+      encargo nuestro y solo para prestarnos ese servicio.
+    </li>
+  </ul>
+  <p>No vendemos tus datos ni los cedemos a terceros para publicidad.</p>
+</section>
+
+<section aria-labelledby="cuanto">
+  <h2 id="cuanto">Cuánto tiempo los conservamos</h2>
+  <ul>
+    <li>Mientras tengas la cuenta. Si la borras, se eliminan en el momento con todos sus datos.</li>
+    <li>Las copias de seguridad se sobrescriben en un máximo de 14 días.</li>
+    <li>Si no confirmas tu email en 30 días, borramos la cuenta.</li>
+    <li>
+      Los enlaces que te enviamos por correo caducan en 48 horas (confirmar el email) o en 1 hora
+      (cambiar la contraseña), y la sesión, tras 30 días sin usar el portal.
+    </li>
+  </ul>
+</section>
+
+<section aria-labelledby="derechos">
+  <h2 id="derechos">Tus derechos</h2>
+  <p>Puedes ejercerlos tú mismo desde <a routerLink="/cuenta">"Mi cuenta"</a>:</p>
+  <ul>
+    <li><strong>Acceso y portabilidad:</strong> descarga una copia de todos tus datos.</li>
+    <li>
+      <strong>Rectificación:</strong> cambia tu nombre, tu currículum o el perfil de tu empresa.
+      Para cambiar el email, escríbenos.
+    </li>
+    <li><strong>Supresión:</strong> borra tu cuenta y todos sus datos.</li>
+    <li><strong>Oposición:</strong> desactiva los avisos por correo.</li>
+  </ul>
+  <p>
+    Para cualquier otra petición (por ejemplo, limitar un tratamiento) escribe a
+    <a [href]="'mailto:' + titular.contacto()">{{ titular.contacto() }}</a
+    >. Te responderemos en el plazo máximo de un mes. Si crees que no hemos atendido bien tu
+    petición, puedes reclamar ante la
+    <a href="https://www.aepd.es" rel="noopener">Agencia Española de Protección de Datos</a>.
+  </p>
+</section>
+
+<section aria-labelledby="cookies">
+  <h2 id="cookies">Cookies</h2>
+  <p>
+    Workflow no usa cookies de publicidad ni de analítica, ni carga contenido de otras webs. Por eso
+    no verás un aviso de cookies. Solo usamos una cookie técnica, imprescindible para mantener tu
+    sesión iniciada, y una marca en tu navegador que indica que hay una sesión abierta.
+  </p>
+</section>
+
+<section aria-labelledby="edad">
+  <h2 id="edad">Edad mínima</h2>
+  <p>Workflow es para mayores de 16 años, la edad mínima para trabajar en España.</p>
+</section>
+
+<p class="otras">
+  Ver también las <a routerLink="/condiciones">condiciones de uso</a> y el
+  <a routerLink="/aviso-legal">aviso legal</a>.
+</p>

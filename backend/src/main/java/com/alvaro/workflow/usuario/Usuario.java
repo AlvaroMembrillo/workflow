@@ -54,6 +54,10 @@ public class Usuario {
 	@Column(name = "avisos_por_correo", nullable = false)
 	private boolean avisosPorCorreo;
 
+	/** Cuándo aceptó las condiciones de uso y la política de privacidad; null en cuentas anteriores a ese requisito. */
+	@Column(name = "condiciones_aceptadas_en")
+	private Instant condicionesAceptadasEn;
+
 	/** Cuándo suspendió la cuenta un administrador; null si no está suspendida. */
 	@Column(name = "suspendido_en")
 	private Instant suspendidoEn;
@@ -81,6 +85,14 @@ public class Usuario {
 		if (emailVerificadoEn == null) {
 			emailVerificadoEn = Instant.now();
 		}
+	}
+
+	public void aceptarCondiciones() {
+		this.condicionesAceptadasEn = Instant.now();
+	}
+
+	public void cambiarNombre(String nombre) {
+		this.nombre = nombre;
 	}
 
 	public boolean isSuspendido() {

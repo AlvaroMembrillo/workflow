@@ -38,6 +38,7 @@ describe('Registro', () => {
     escribir('nombre', 'Acme Software');
     escribir('email', 'rrhh@acme.es');
     escribir('password', 'una-clave-larga');
+    pagina().querySelector<HTMLInputElement>('#aceptaCondiciones')!.click();
     await enviar();
   }
 
@@ -74,9 +75,25 @@ describe('Registro', () => {
     await enviar();
 
     backend.expectNone('/api/auth/registro');
-    expect(pagina().querySelectorAll('[aria-invalid="true"]')).toHaveLength(3);
+    expect(pagina().querySelectorAll('[aria-invalid="true"]')).toHaveLength(4);
     expect(pagina().textContent).toContain('Escribe tu email');
     expect(pagina().textContent).toContain('Elige una contraseña');
+  });
+
+  it('no crea la cuenta sin aceptar las condiciones y la política de privacidad', async () => {
+    await crear();
+    escribir('nombre', 'Ana García');
+    escribir('email', 'ana@test.com');
+    escribir('password', 'una-clave-larga');
+
+    await enviar();
+
+    backend.expectNone('/api/auth/registro');
+    expect(pagina().querySelector('#acepto-error')!.textContent).toContain(
+      'tienes que aceptar las condiciones',
+    );
+    expect(pagina().querySelector('a[href="/condiciones"]')!.getAttribute('target')).toBe('_blank');
+    expect(pagina().querySelector('a[href="/privacidad"]')).not.toBeNull();
   });
 
   it('crea la cuenta y lleva a la empresa a su panel', async () => {
@@ -89,6 +106,7 @@ describe('Registro', () => {
       nombre: 'Acme Software',
       email: 'rrhh@acme.es',
       password: 'una-clave-larga',
+      aceptaCondiciones: true,
     });
     peticion.flush({
       accessToken: tokenDePrueba({ rol: 'EMPRESA' }),

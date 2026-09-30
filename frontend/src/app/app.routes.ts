@@ -115,6 +115,26 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'cuenta-borrada',
+    title: 'Cuenta borrada',
+    loadComponent: () => import('./paginas/cuenta/cuenta-borrada').then((m) => m.CuentaBorrada),
+  },
+  {
+    path: 'privacidad',
+    title: 'Política de privacidad',
+    loadComponent: () => import('./paginas/legal/privacidad').then((m) => m.Privacidad),
+  },
+  {
+    path: 'condiciones',
+    title: 'Condiciones de uso',
+    loadComponent: () => import('./paginas/legal/condiciones').then((m) => m.Condiciones),
+  },
+  {
+    path: 'aviso-legal',
+    title: 'Aviso legal',
+    loadComponent: () => import('./paginas/legal/aviso-legal').then((m) => m.AvisoLegal),
+  },
+  {
     path: 'admin',
     title: 'Moderación',
     canActivate: [requiereRol('ADMIN')],

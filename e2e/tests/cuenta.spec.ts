@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+
 import { expect, test } from '@playwright/test';
 
 import { correoPara, crearCuenta, enlaceDe, entrar, unico } from './apoyo';
@@ -9,6 +11,10 @@ test('quien se registra confirma su email con el enlace del correo', async ({ pa
   await page.getByLabel('Nombre', { exact: true }).fill('Nueva E2E');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Contraseña', { exact: true }).fill('clave-e2e-segura');
+  // Sin aceptar las condiciones no se crea la cuenta
+  await page.getByRole('button', { name: 'Crear cuenta' }).click();
+  await expect(page.locator('#acepto-error')).toContainText('tienes que aceptar las condiciones');
+  await page.getByLabel(/He leído y acepto/).check();
   await page.getByRole('button', { name: 'Crear cuenta' }).click();
 
   // Hasta que lo confirme, la aplicación se lo recuerda en todas las páginas
@@ -164,4 +170,62 @@ test('tras cinco contraseñas incorrectas hay que esperar para volver a intentar
   await expect(page.getByRole('alert')).toContainText(
     'Has hecho demasiados intentos. Espera 15 minutos y vuelve a probar.',
   );
+});
+
+test('un candidato descarga sus datos y borra su cuenta', async ({ page, request }) => {
+  const cuenta = await crearCuenta(request, 'CANDIDATO');
+  await entrar(page, cuenta.email, cuenta.password);
+  await page.goto('/cuenta');
+
+  // Corrige su nombre
+  await page.getByRole('button', { name: 'Cambiar el nombre' }).click();
+  await page.getByLabel('Nombre').fill('Nombre Corregido');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('.nombre')).toContainText('Nombre Corregido');
+
+  // Descarga una copia de sus datos
+  const descarga = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Descargar', exact: true }).click();
+  const fichero = await descarga;
+  expect(fichero.suggestedFilename()).toBe('workflow-mis-datos.json');
+  const datos = JSON.parse(await readFile(await fichero.path(), 'utf8')) as {
+    cuenta: { email: string; nombre: string };
+  };
+  expect(datos.cuenta).toMatchObject({ email: cuenta.email, nombre: 'Nombre Corregido' });
+
+  // Borra la cuenta confirmando con su contraseña
+  await page.getByRole('button', { name: 'Borrar mi cuenta' }).click();
+  const confirmacion = page.getByRole('dialog', { name: '¿Borrar tu cuenta?' });
+  await expect(confirmacion).toContainText('No se puede deshacer');
+  await confirmacion.getByLabel('Escribe tu contraseña para confirmar').fill('no-es-esta');
+  await confirmacion.getByRole('button', { name: 'Borrar mi cuenta' }).click();
+  await expect(confirmacion).toContainText('La contraseña no es correcta');
+  await confirmacion.getByLabel('Escribe tu contraseña para confirmar').fill(cuenta.password);
+  await confirmacion.getByRole('button', { name: 'Borrar mi cuenta' }).click();
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hemos borrado tu cuenta');
+  await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
+  await correoPara(request, cuenta.email, 'Hemos borrado tu cuenta de Workflow');
+
+  // La cuenta ya no existe
+  await page.goto('/entrar');
+  await page.getByLabel('Email').fill(cuenta.email);
+  await page.getByLabel('Contraseña', { exact: true }).fill(cuenta.password);
+  await page.getByRole('button', { name: 'Entrar' }).click();
+  await expect(page.getByRole('alert')).toContainText('El email o la contraseña no son correctos');
+});
+
+test('las páginas legales están enlazadas desde el pie y muestran quién responde del portal', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('navigation', { name: 'Información legal' }).getByRole('link', { name: 'Privacidad' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Política de privacidad');
+  await expect(page.locator('dl')).toContainText('Workflow (proyecto de demostración)');
+
+  await page.getByRole('navigation', { name: 'Información legal' }).getByRole('link', { name: 'Condiciones de uso' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Condiciones de uso');
+
+  await page.getByRole('navigation', { name: 'Información legal' }).getByRole('link', { name: 'Aviso legal' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Aviso legal');
 });

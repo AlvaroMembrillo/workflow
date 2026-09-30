@@ -3,6 +3,7 @@ package com.alvaro.workflow.auth.dto;
 import com.alvaro.workflow.usuario.Rol;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,5 +26,11 @@ public record RegistroRequest(
 
 		@NotNull(message = "El rol es obligatorio")
 		@Schema(allowableValues = { "CANDIDATO", "EMPRESA" })
-		Rol rol) {
+		Rol rol,
+
+		// @AssertTrue da por bueno un null, así que también hace falta @NotNull
+		@NotNull(message = "Tienes que aceptar las condiciones de uso y la política de privacidad")
+		@AssertTrue(message = "Tienes que aceptar las condiciones de uso y la política de privacidad")
+		@Schema(description = "El usuario ha leído y acepta las condiciones de uso y la política de privacidad")
+		Boolean aceptaCondiciones) {
 }

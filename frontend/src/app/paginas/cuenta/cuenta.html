@@ -9,8 +9,43 @@
     <h2 id="titulo-datos">Tus datos</h2>
     <dl class="datos">
       <div>
-        <dt>{{ usuario.rol === 'EMPRESA' ? 'Empresa' : 'Nombre' }}</dt>
-        <dd>{{ usuario.nombre }}</dd>
+        <dt>Nombre</dt>
+        <dd class="nombre">
+          @if (editandoNombre()) {
+            <form class="editar-nombre" (submit)="guardarNombre($event)">
+              <label for="nombre" class="solo-lectores">Nombre</label>
+              <input
+                #campoNombre
+                id="nombre"
+                name="nombre"
+                class="input"
+                autocomplete="name"
+                maxlength="100"
+                required
+                [value]="usuario.nombre"
+              />
+              <button
+                type="submit"
+                class="btn btn-primario btn-pequeno"
+                [disabled]="guardandoNombre()"
+              >
+                {{ guardandoNombre() ? 'Guardando…' : 'Guardar' }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-fantasma btn-pequeno"
+                (click)="editandoNombre.set(false)"
+              >
+                Cancelar
+              </button>
+            </form>
+          } @else {
+            <span>{{ usuario.nombre }}</span>
+            <button type="button" class="btn btn-fantasma btn-pequeno" (click)="editarNombre()">
+              Cambiar<span class="solo-lectores"> el nombre</span>
+            </button>
+          }
+        </dd>
       </div>
       <div>
         <dt>Email</dt>
@@ -26,6 +61,7 @@
         </dd>
       </div>
     </dl>
+    <p class="ayuda" role="status">{{ avisoNombre() }}</p>
     @if (!usuario.emailVerificado) {
       <div class="fila">
         <p class="ayuda">Te hemos enviado un enlace para confirmarlo. Caduca en 48 horas.</p>
@@ -151,6 +187,88 @@
       </div>
     </form>
   </section>
+  <section class="tarjeta bloque" aria-labelledby="titulo-privacidad">
+    <h2 id="titulo-privacidad">Tus datos y tu privacidad</h2>
+    <p class="ayuda">
+      En la <a routerLink="/privacidad">política de privacidad</a> explicamos qué guardamos y para
+      qué.
+    </p>
+    <div class="fila">
+      <p>
+        <strong>Descargar mis datos</strong><br />
+        <span class="ayuda">Una copia de todo lo que guardamos sobre ti, en un fichero JSON.</span>
+      </p>
+      <button
+        type="button"
+        class="btn btn-secundario btn-pequeno"
+        [disabled]="descargando()"
+        (click)="descargarDatos()"
+      >
+        {{ descargando() ? 'Preparando…' : 'Descargar' }}
+      </button>
+    </div>
+    @if (usuario.rol !== 'ADMIN') {
+      <div class="fila">
+        <p>
+          <strong>Borrar mi cuenta</strong><br />
+          <span class="ayuda">Elimina la cuenta y todos sus datos. No se puede deshacer.</span>
+        </p>
+        <button type="button" class="btn btn-peligro btn-pequeno" (click)="abrirBaja()">
+          Borrar mi cuenta
+        </button>
+      </div>
+    }
+    @if (errorPrivacidad(); as textoError) {
+      <p class="aviso aviso-error" role="alert">
+        <svg lucideCircleAlert [size]="18"></svg>
+        {{ textoError }}
+      </p>
+    }
+  </section>
+
+  <dialog #dialogoBaja class="baja" aria-labelledby="baja-titulo" (close)="cerrarBaja()">
+    <form (submit)="borrarCuenta($event)">
+      <h2 id="baja-titulo">¿Borrar tu cuenta?</h2>
+      <p>
+        @if (usuario.rol === 'EMPRESA') {
+          Se borrarán el perfil de tu empresa, todas tus ofertas y las candidaturas que has
+          recibido. Avisaremos a los candidatos que esperaban respuesta.
+        } @else {
+          Se borrarán tu currículum y todas tus candidaturas. Las empresas dejarán de verlas.
+        }
+        <strong>No se puede deshacer.</strong>
+      </p>
+      @if (errorBaja(); as textoError) {
+        <p class="aviso aviso-error" role="alert">
+          <svg lucideCircleAlert [size]="18"></svg>
+          {{ textoError }}
+        </p>
+      }
+      <div class="campo">
+        <label for="baja-password">Escribe tu contraseña para confirmar</label>
+        <input
+          id="baja-password"
+          name="password"
+          class="input"
+          type="password"
+          autocomplete="current-password"
+          [attr.aria-invalid]="errorPasswordBaja() !== null"
+          [attr.aria-describedby]="errorPasswordBaja() ? 'baja-password-error' : null"
+        />
+        @if (errorPasswordBaja(); as textoError) {
+          <p id="baja-password-error" class="error-campo">{{ textoError }}</p>
+        }
+      </div>
+      <div class="acciones">
+        <button type="button" class="btn btn-fantasma" (click)="dialogoBaja.close()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-peligro" [disabled]="borrando()">
+          {{ borrando() ? 'Borrando…' : 'Borrar mi cuenta' }}
+        </button>
+      </div>
+    </form>
+  </dialog>
 } @else if (cuenta.datos.error()) {
   <div class="aviso aviso-error" role="alert">
     <svg lucideCircleAlert [size]="18"></svg>
