@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideLogOut } from '@lucide/angular';
+import { LucideCircleUser, LucideLogOut } from '@lucide/angular';
 
 import { Sesion } from '../../core/auth/sesion';
 import { Logo } from '../logo/logo';
 
 @Component({
   selector: 'app-cabecera',
-  imports: [RouterLink, RouterLinkActive, Logo, LucideLogOut],
+  imports: [RouterLink, RouterLinkActive, Logo, LucideCircleUser, LucideLogOut],
   templateUrl: './cabecera.html',
   styleUrl: './cabecera.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

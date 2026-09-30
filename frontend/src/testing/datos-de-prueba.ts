@@ -1,4 +1,5 @@
 import { Empresa, MiCandidatura, Oferta, Pagina } from '../app/core/api/modelos';
+import { Usuario } from '../app/core/auth/modelos';
 
 export function ofertaDePrueba(cambios: Partial<Oferta> = {}): Oferta {
   return {
@@ -25,6 +26,19 @@ export function empresaDePrueba(cambios: Partial<Empresa> = {}): Empresa {
     descripcion: 'Seguros para personas y pymes.',
     sitioWeb: 'https://lumen.example',
     ubicacion: 'Madrid',
+    ...cambios,
+  };
+}
+
+export function usuarioDePrueba(cambios: Partial<Usuario> = {}): Usuario {
+  return {
+    id: '8f1c2a4e-0000-4000-8000-000000000001',
+    email: 'ana@test.com',
+    nombre: 'Ana García',
+    rol: 'CANDIDATO',
+    fechaCreacion: '2026-09-20T10:00:00Z',
+    emailVerificado: true,
+    avisosPorCorreo: true,
     ...cambios,
   };
 }

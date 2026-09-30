@@ -136,6 +136,34 @@
   color: var(--no-fg);
 }
 
+/* Campo con un botón dentro, como el de mostrar la contraseña */
+.con-accion {
+  position: relative;
+}
+
+.con-accion .input {
+  padding-right: 3rem;
+}
+
+.accion-campo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 2.75rem;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  border-radius: 0 var(--r-control) var(--r-control) 0;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.accion-campo:hover {
+  color: var(--ink);
+}
+
 /* ---------- Avisos dentro de la página ---------- */
 .aviso {
   display: flex;

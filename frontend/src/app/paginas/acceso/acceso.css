@@ -21,34 +21,30 @@
   color: var(--muted);
 }
 
-.con-accion {
-  position: relative;
-}
-
-.con-accion .input {
-  padding-right: 3rem;
-}
-
-.accion-campo {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  width: 2.75rem;
-  display: grid;
-  place-items: center;
-  background: none;
-  border: 0;
-  border-radius: 0 var(--r-control) var(--r-control) 0;
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.accion-campo:hover {
-  color: var(--ink);
-}
-
 .alternativa {
   font-size: 0.95rem;
   color: var(--muted);
+}
+
+/* Resultado de una acción que sustituye al formulario (enlace enviado, email confirmado…) */
+.resultado {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+.resultado:focus {
+  outline: none;
+}
+
+.resultado > svg {
+  color: var(--brand);
+}
+
+.resultado.fallo > svg {
+  color: var(--no-fg);
+}
+
+.olvido {
+  font-size: 0.9rem;
 }

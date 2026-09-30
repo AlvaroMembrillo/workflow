@@ -3,12 +3,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { distinctUntilChanged, filter, map, skip } from 'rxjs';
 
+import { AvisoVerificacion } from './layout/aviso-verificacion/aviso-verificacion';
 import { Cabecera } from './layout/cabecera/cabecera';
 import { Pie } from './layout/pie/pie';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Cabecera, Pie],
+  imports: [RouterOutlet, Cabecera, AvisoVerificacion, Pie],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
