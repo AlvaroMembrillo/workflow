@@ -16,6 +16,8 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MockMvcTester.MockMvcRequestBuilder;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
+import com.alvaro.workflow.correo.BuzonDePrueba;
+import com.alvaro.workflow.correo.CorreoDePruebaConfiguration;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -25,13 +27,16 @@ import com.jayway.jsonpath.JsonPath;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import({ TestcontainersConfiguration.class, CorreoDePruebaConfiguration.class })
 public abstract class IntegrationTestBase {
 
 	protected static final String PASSWORD = "contraseña-segura";
 
 	@Autowired
 	protected MockMvcTester mvc;
+
+	@Autowired
+	protected BuzonDePrueba buzon;
 
 	protected MvcTestResult registrar(String email, String rol) {
 		return registrar(email, rol, "Ana García");
@@ -51,6 +56,15 @@ public abstract class IntegrationTestBase {
 	/** Registra un candidato llamado "Ana García" y devuelve su token. */
 	protected String nuevoCandidato() {
 		return tokenDeRegistro(registrar(emailUnico(), "CANDIDATO"));
+	}
+
+	/** Registra una cuenta y verifica su email con el enlace del correo. Devuelve su token. */
+	protected String registrarYVerificar(String email, String rol, String nombre) {
+		String token = tokenDeRegistro(registrar(email, rol, nombre));
+		assertThat(post("/api/auth/verificacion", null, """
+				{"token": "%s"}
+				""".formatted(buzon.tokenDelUltimoEnlacePara(email)))).hasStatus(HttpStatus.NO_CONTENT);
+		return token;
 	}
 
 	protected MvcTestResult get(String uri, String token) {
@@ -88,7 +102,7 @@ public abstract class IntegrationTestBase {
 		return "m" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 	}
 
-	private static String tokenDeRegistro(MvcTestResult respuesta) {
+	protected static String tokenDeRegistro(MvcTestResult respuesta) {
 		assertThat(respuesta).hasStatus(HttpStatus.CREATED);
 		return leer(respuesta, "$.accessToken");
 	}

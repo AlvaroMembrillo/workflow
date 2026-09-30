@@ -51,3 +51,40 @@ export async function entrar(page: Page, email: string, password: string): Promi
   await page.getByRole('button', { name: 'Entrar' }).click();
   await expect(page.getByRole('button', { name: 'Salir' })).toBeVisible();
 }
+
+/** Mailpit recoge los correos que envía la demo; aquí se leen como haría el usuario en su bandeja. */
+const URL_CORREO = process.env['URL_CORREO'] ?? 'http://localhost:8026';
+
+/**
+ * Espera el último correo enviado a una dirección con ese asunto y devuelve su texto.
+ * El envío es asíncrono, así que puede tardar un momento en llegar.
+ */
+export async function correoPara(
+  request: APIRequestContext,
+  email: string,
+  asunto: string,
+): Promise<string> {
+  let id: string | undefined;
+  await expect
+    .poll(
+      async () => {
+        const respuesta = await request.get(`${URL_CORREO}/api/v1/search`, {
+          params: { query: `to:${email} subject:"${asunto}"` },
+        });
+        const { messages } = (await respuesta.json()) as { messages: { ID: string }[] };
+        id = messages[0]?.ID;
+        return id;
+      },
+      { message: `Debería llegar a ${email} el correo "${asunto}"` },
+    )
+    .toBeDefined();
+  const mensaje = await request.get(`${URL_CORREO}/api/v1/message/${id}`);
+  return ((await mensaje.json()) as { Text: string }).Text;
+}
+
+/** El enlace a la aplicación que contiene un correo, sin el dominio (para usarlo con page.goto). */
+export function enlaceDe(texto: string, ruta: string): string {
+  const enlace = texto.match(new RegExp(`https?://[^\\s/]+(${ruta}#[\\w-]+)`));
+  expect(enlace, `El correo debería tener un enlace a ${ruta}`).not.toBeNull();
+  return enlace![1];
+}

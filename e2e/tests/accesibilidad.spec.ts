@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, test } from '@playwright/test';
 
-import { entrar, ofertaPorTitulo, PASSWORD_DEMO } from './apoyo';
+import { crearCuenta, entrar, ofertaPorTitulo, PASSWORD_DEMO } from './apoyo';
 
 /** Criterios de WCAG 2.2 nivel AA, el objetivo de la guía de diseño. */
 const CRITERIOS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -38,6 +38,26 @@ for (const tema of ['light', 'dark'] as const) {
       await page.goto('/registro');
       await page.getByRole('button', { name: 'Crear cuenta' }).click();
       await expect(page.locator('.error-campo').first()).toBeVisible();
+      await auditar(page);
+    });
+
+    test('recuperar la contraseña y enlace que ya no vale', async ({ page }) => {
+      await page.goto('/recuperar');
+      await page.getByRole('button', { name: 'Enviar enlace' }).click();
+      await expect(page.locator('.error-campo')).toBeVisible();
+      await auditar(page);
+
+      await page.goto('/restablecer');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Este enlace ya no vale');
+      await auditar(page);
+    });
+
+    test('mi cuenta, con el aviso de email sin confirmar', async ({ page, request }) => {
+      const cuenta = await crearCuenta(request, 'CANDIDATO');
+      await entrar(page, cuenta.email, cuenta.password);
+      await page.goto('/cuenta');
+      await expect(page.getByRole('complementary', { name: 'Email sin confirmar' })).toBeVisible();
+      await expect(page.locator('.datos')).toContainText('Sin confirmar');
       await auditar(page);
     });
 

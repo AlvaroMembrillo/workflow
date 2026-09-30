@@ -1,6 +1,7 @@
 :host {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  /* Cabecera, aviso de email sin confirmar (vacío casi siempre), contenido y pie */
+  grid-template-rows: auto auto 1fr auto;
   min-height: 100dvh;
 }
 

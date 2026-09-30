@@ -1,0 +1,80 @@
+<div class="caja">
+  @switch (estado()) {
+    @case ('cambiada') {
+      <div #resultado class="resultado" tabindex="-1">
+        <svg lucideCircleCheck [size]="32"></svg>
+        <h1>Contraseña cambiada</h1>
+        @if (sesion.iniciada()) {
+          <p>Ya puedes usar la contraseña nueva la próxima vez que entres.</p>
+          <a routerLink="/" class="btn btn-primario">Ver ofertas</a>
+        } @else {
+          <p>Ya puedes entrar con la contraseña nueva.</p>
+          <a routerLink="/entrar" class="btn btn-primario">Entrar</a>
+        }
+      </div>
+    }
+    @case ('enlace-no-valido') {
+      <div #resultado class="resultado fallo" tabindex="-1">
+        <svg lucideUnlink [size]="32"></svg>
+        <h1>Este enlace ya no vale</h1>
+        <p>
+          Los enlaces para cambiar la contraseña caducan en 1 hora y solo se pueden usar una vez.
+          Pide otro y te lo enviamos ahora.
+        </p>
+        <a routerLink="/recuperar" class="btn btn-primario">Pedir otro enlace</a>
+      </div>
+    }
+    @default {
+      <header>
+        <h1>Elige una contraseña nueva</h1>
+        <p>Sustituirá a la anterior en cuanto la guardes.</p>
+      </header>
+
+      <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+        @if (error(); as mensajeError) {
+          <p class="aviso aviso-error" role="alert">
+            <svg lucideCircleAlert [size]="18"></svg>
+            {{ mensajeError }}
+          </p>
+        }
+
+        <div class="campo">
+          <label for="password">Contraseña nueva</label>
+          <div class="con-accion">
+            <input
+              id="password"
+              class="input"
+              [type]="verPassword() ? 'text' : 'password'"
+              autocomplete="new-password"
+              formControlName="password"
+              [attr.aria-invalid]="tieneError()"
+              aria-describedby="password-ayuda"
+            />
+            <button
+              type="button"
+              class="accion-campo"
+              [attr.aria-pressed]="verPassword()"
+              aria-label="Mostrar contraseña"
+              (click)="verPassword.set(!verPassword())"
+            >
+              @if (verPassword()) {
+                <svg lucideEyeOff [size]="18"></svg>
+              } @else {
+                <svg lucideEye [size]="18"></svg>
+              }
+            </button>
+          </div>
+          @if (tieneError()) {
+            <p id="password-ayuda" class="error-campo">{{ mensaje() }}</p>
+          } @else {
+            <p id="password-ayuda" class="ayuda">Mínimo 8 caracteres.</p>
+          }
+        </div>
+
+        <button type="submit" class="btn btn-primario btn-bloque" [disabled]="enviando()">
+          {{ enviando() ? 'Guardando…' : 'Guardar contraseña' }}
+        </button>
+      </form>
+    }
+  }
+</div>

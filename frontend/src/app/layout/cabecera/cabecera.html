@@ -44,7 +44,17 @@
 
     <div class="cuenta">
       @if (sesion.usuario(); as usuario) {
-        <span class="email" [title]="usuario.email">{{ usuario.email }}</span>
+        <a
+          routerLink="/cuenta"
+          routerLinkActive="activo"
+          ariaCurrentWhenActive="page"
+          class="mi-cuenta"
+          [title]="usuario.email"
+          [attr.aria-label]="'Mi cuenta: ' + usuario.email"
+        >
+          <svg lucideCircleUser [size]="18"></svg>
+          <span class="email">{{ usuario.email }}</span>
+        </a>
         <button type="button" class="btn btn-fantasma btn-pequeno" (click)="salir()">
           <svg lucideLogOut [size]="16"></svg>
           Salir

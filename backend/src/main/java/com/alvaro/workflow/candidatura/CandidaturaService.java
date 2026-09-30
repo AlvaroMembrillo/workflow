@@ -35,6 +35,7 @@ public class CandidaturaService {
 	private final OfertaService ofertaService;
 	private final UsuarioService usuarioService;
 	private final CandidaturaMapper candidaturaMapper;
+	private final AvisosDeCandidaturas avisos;
 
 	@Transactional
 	public MiCandidaturaResponse inscribirse(UUID candidatoId, UUID ofertaId, CandidaturaRequest request) {
@@ -50,6 +51,7 @@ public class CandidaturaService {
 
 		Usuario candidato = usuarioService.buscarPorId(candidatoId);
 		Candidatura candidatura = candidaturas.save(new Candidatura(oferta, candidato, request.cartaPresentacion()));
+		avisos.recibida(candidatura);
 		return candidaturaMapper.toMiCandidatura(candidatura);
 	}
 
@@ -104,6 +106,7 @@ public class CandidaturaService {
 		}
 
 		candidatura.cambiarEstado(estado);
+		avisos.estadoCambiado(candidatura);
 		return candidaturaMapper.toRecibida(candidaturas.saveAndFlush(candidatura));
 	}
 

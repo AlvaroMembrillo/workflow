@@ -1,0 +1,55 @@
+<div class="caja">
+  @if (enviadoA(); as email) {
+    <div #confirmacion class="resultado" tabindex="-1">
+      <svg lucideMailCheck [size]="32"></svg>
+      <h1>Revisa tu correo</h1>
+      <p>
+        Si hay una cuenta con el email <strong>{{ email }}</strong
+        >, te hemos enviado un enlace para elegir una contraseña nueva. Caduca en 1 hora.
+      </p>
+      <p class="ayuda">
+        ¿No llega? Mira en la carpeta de spam o comprueba que el email es el correcto.
+      </p>
+      <a routerLink="/entrar" class="btn btn-secundario">Volver a entrar</a>
+    </div>
+  } @else {
+    <header>
+      <h1>Recupera tu contraseña</h1>
+      <p>Escribe el email de tu cuenta y te enviaremos un enlace para elegir una nueva.</p>
+    </header>
+
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+      @if (error(); as mensajeError) {
+        <p class="aviso aviso-error" role="alert">
+          <svg lucideCircleAlert [size]="18"></svg>
+          {{ mensajeError }}
+        </p>
+      }
+
+      <div class="campo">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          class="input"
+          type="email"
+          autocomplete="email"
+          formControlName="email"
+          [attr.aria-invalid]="tieneError()"
+          [attr.aria-describedby]="tieneError() ? 'email-error' : null"
+        />
+        @if (tieneError()) {
+          <p id="email-error" class="error-campo">{{ mensaje() }}</p>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primario btn-bloque" [disabled]="enviando()">
+        {{ enviando() ? 'Enviando…' : 'Enviar enlace' }}
+      </button>
+    </form>
+
+    <p class="alternativa">
+      ¿Te has acordado?
+      <a routerLink="/entrar">Entra</a>
+    </p>
+  }
+</div>

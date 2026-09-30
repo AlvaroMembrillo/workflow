@@ -1,0 +1,154 @@
+<header class="encabezado">
+  <h1>Mi cuenta</h1>
+</header>
+
+@if (cuenta.datos.hasValue()) {
+  @let usuario = cuenta.datos.value();
+
+  <section class="tarjeta bloque" aria-labelledby="titulo-datos">
+    <h2 id="titulo-datos">Tus datos</h2>
+    <dl class="datos">
+      <div>
+        <dt>{{ usuario.rol === 'EMPRESA' ? 'Empresa' : 'Nombre' }}</dt>
+        <dd>{{ usuario.nombre }}</dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd class="email">
+          <span>{{ usuario.email }}</span>
+          @if (usuario.emailVerificado) {
+            <span class="marca marca-ok"><svg lucideBadgeCheck [size]="16"></svg> Confirmado</span>
+          } @else {
+            <span class="marca marca-pendiente"
+              ><svg lucideMailWarning [size]="16"></svg> Sin confirmar</span
+            >
+          }
+        </dd>
+      </div>
+    </dl>
+    @if (!usuario.emailVerificado) {
+      <div class="fila">
+        <p class="ayuda">Te hemos enviado un enlace para confirmarlo. Caduca en 48 horas.</p>
+        <button
+          type="button"
+          class="btn btn-secundario btn-pequeno"
+          [disabled]="reenviando()"
+          (click)="reenviar()"
+        >
+          {{ reenviando() ? 'Enviando…' : 'Enviar otro enlace' }}
+        </button>
+      </div>
+      <p class="ayuda" role="status">{{ reenvio() }}</p>
+    }
+  </section>
+
+  <section class="tarjeta bloque" aria-labelledby="titulo-avisos">
+    <h2 id="titulo-avisos">Avisos por correo</h2>
+    <label class="casilla">
+      <input
+        type="checkbox"
+        [checked]="usuario.avisosPorCorreo"
+        [disabled]="guardandoAvisos()"
+        (change)="cambiarAvisos($event)"
+      />
+      <span>
+        @if (usuario.rol === 'EMPRESA') {
+          Avisarme cuando alguien se inscriba en una de mis ofertas
+        } @else {
+          Avisarme cuando una empresa revise o responda a mi candidatura
+        }
+      </span>
+    </label>
+    <p class="ayuda">
+      Los correos sobre tu cuenta (confirmar el email, cambiar la contraseña) se envían siempre.
+    </p>
+    <p class="ayuda" role="status">{{ avisoAvisos() }}</p>
+  </section>
+
+  <section class="tarjeta bloque" aria-labelledby="titulo-password">
+    <h2 id="titulo-password">Cambiar la contraseña</h2>
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="cambiarPassword()" novalidate>
+      <div aria-live="polite">
+        @if (passwordCambiada()) {
+          <p class="aviso aviso-ok">
+            <svg lucideCircleCheck [size]="18"></svg>
+            Contraseña cambiada. Úsala la próxima vez que entres.
+          </p>
+        }
+      </div>
+      @if (error(); as textoError) {
+        <p class="aviso aviso-error" role="alert">
+          <svg lucideCircleAlert [size]="18"></svg>
+          {{ textoError }}
+        </p>
+      }
+
+      <div class="campo">
+        <label for="passwordActual">Contraseña actual</label>
+        <input
+          id="passwordActual"
+          class="input"
+          [type]="verPassword() ? 'text' : 'password'"
+          autocomplete="current-password"
+          formControlName="passwordActual"
+          [attr.aria-invalid]="tieneError('passwordActual')"
+          [attr.aria-describedby]="tieneError('passwordActual') ? 'passwordActual-error' : null"
+        />
+        @if (tieneError('passwordActual')) {
+          <p id="passwordActual-error" class="error-campo">{{ mensaje('passwordActual') }}</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="passwordNueva">Contraseña nueva</label>
+        <div class="con-accion">
+          <input
+            id="passwordNueva"
+            class="input"
+            [type]="verPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+            formControlName="passwordNueva"
+            [attr.aria-invalid]="tieneError('passwordNueva')"
+            aria-describedby="passwordNueva-ayuda"
+          />
+          <button
+            type="button"
+            class="accion-campo"
+            [attr.aria-pressed]="verPassword()"
+            aria-label="Mostrar contraseñas"
+            (click)="verPassword.set(!verPassword())"
+          >
+            @if (verPassword()) {
+              <svg lucideEyeOff [size]="18"></svg>
+            } @else {
+              <svg lucideEye [size]="18"></svg>
+            }
+          </button>
+        </div>
+        @if (tieneError('passwordNueva')) {
+          <p id="passwordNueva-ayuda" class="error-campo">{{ mensaje('passwordNueva') }}</p>
+        } @else {
+          <p id="passwordNueva-ayuda" class="ayuda">Mínimo 8 caracteres.</p>
+        }
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+          {{ enviando() ? 'Guardando…' : 'Cambiar contraseña' }}
+        </button>
+      </div>
+    </form>
+  </section>
+} @else if (cuenta.datos.error()) {
+  <div class="aviso aviso-error" role="alert">
+    <svg lucideCircleAlert [size]="18"></svg>
+    <div class="aviso-cuerpo">
+      <p>No hemos podido cargar tu cuenta. Comprueba tu conexión.</p>
+      <button type="button" class="btn btn-secundario btn-pequeno" (click)="cuenta.recargar()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+} @else {
+  <p class="ayuda" role="status">Cargando tu cuenta…</p>
+}

@@ -64,6 +64,7 @@
       @if (tieneError('password')) {
         <p id="password-error" class="error-campo">{{ mensaje('password') }}</p>
       }
+      <p class="olvido"><a routerLink="/recuperar">¿Has olvidado tu contraseña?</a></p>
     </div>
 
     <button type="submit" class="btn btn-primario btn-bloque" [disabled]="enviando()">

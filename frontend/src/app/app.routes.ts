@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { requiereRol, soloSinSesion } from './core/auth/guards';
+import { requiereRol, requiereSesion, soloSinSesion } from './core/auth/guards';
 import { avisarCambiosSinGuardar } from './core/cambios-sin-guardar';
 
 const formularioOferta = () =>
@@ -38,6 +38,30 @@ export const routes: Routes = [
     title: 'Crear cuenta',
     canActivate: [soloSinSesion],
     loadComponent: () => import('./paginas/acceso/registro/registro').then((m) => m.Registro),
+  },
+  {
+    path: 'recuperar',
+    title: 'Recuperar contraseña',
+    loadComponent: () => import('./paginas/acceso/recuperar/recuperar').then((m) => m.Recuperar),
+  },
+  {
+    path: 'restablecer',
+    title: 'Contraseña nueva',
+    loadComponent: () =>
+      import('./paginas/acceso/restablecer/restablecer').then((m) => m.Restablecer),
+  },
+  {
+    path: 'verificar-email',
+    title: 'Confirmar email',
+    loadComponent: () =>
+      import('./paginas/acceso/verificar-email/verificar-email').then((m) => m.VerificarEmail),
+  },
+  {
+    path: 'cuenta',
+    title: 'Mi cuenta',
+    canActivate: [requiereSesion],
+    runGuardsAndResolvers: 'always',
+    loadComponent: () => import('./paginas/cuenta/cuenta').then((m) => m.Cuenta),
   },
   {
     path: 'mis-candidaturas',

@@ -39,6 +39,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return problema(HttpStatus.BAD_REQUEST, ex);
 	}
 
+	@ExceptionHandler(CampoNoValidoException.class)
+	ProblemDetail campoNoValido(CampoNoValidoException ex) {
+		ProblemDetail problema = problema(HttpStatus.BAD_REQUEST, ex);
+		problema.setProperty("errores", Map.of(ex.getCampo(), ex.getMessage()));
+		return problema;
+	}
+
 	@ExceptionHandler(AccesoDenegadoException.class)
 	ProblemDetail accesoDenegado(AccesoDenegadoException ex) {
 		return problema(HttpStatus.FORBIDDEN, ex);

@@ -35,7 +35,9 @@ class SecurityConfig {
 				.cors(Customizer.withDefaults())
 				.sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(peticiones -> peticiones
-						.requestMatchers(HttpMethod.POST, "/api/auth/registro", "/api/auth/login").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/auth/registro", "/api/auth/login",
+								"/api/auth/verificacion", "/api/auth/recuperacion", "/api/auth/restablecimiento")
+						.permitAll()
 						// Lectura pública de ofertas y perfiles de empresa. /me va antes porque también encaja con /{id}
 						.requestMatchers(HttpMethod.GET, "/api/empresas/me", "/api/empresas/me/**").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/ofertas", "/api/ofertas/{id}", "/api/empresas/{id}").permitAll()

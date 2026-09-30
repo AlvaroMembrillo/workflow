@@ -1,0 +1,46 @@
+<div class="caja" aria-live="polite">
+  @switch (estado()) {
+    @case ('verificado') {
+      <div class="resultado">
+        <svg lucideCircleCheck [size]="32"></svg>
+        <h1>Email confirmado</h1>
+        @if (sesion.iniciada()) {
+          <p>Gracias. Tu cuenta ya está completa.</p>
+          <a [routerLink]="inicio" class="btn btn-primario">Continuar</a>
+        } @else {
+          <p>Gracias. Entra en tu cuenta para continuar.</p>
+          <a routerLink="/entrar" class="btn btn-primario">Entrar</a>
+        }
+      </div>
+    }
+    @case ('enlace-no-valido') {
+      <div class="resultado fallo">
+        <svg lucideUnlink [size]="32"></svg>
+        <h1>Este enlace ya no vale</h1>
+        <p>
+          Puede que haya caducado (duran 48 horas) o que hayas pedido otro después: solo vale el
+          último.
+        </p>
+        @if (sesion.iniciada()) {
+          <button
+            type="button"
+            class="btn btn-primario"
+            [disabled]="reenviando()"
+            (click)="reenviar()"
+          >
+            {{ reenviando() ? 'Enviando…' : 'Enviar otro enlace' }}
+          </button>
+          <p role="status">{{ reenvio() }}</p>
+        } @else {
+          <p>Entra en tu cuenta y te enviamos uno nuevo.</p>
+          <a routerLink="/entrar" [queryParams]="{ volver: '/cuenta' }" class="btn btn-primario"
+            >Entrar</a
+          >
+        }
+      </div>
+    }
+    @default {
+      <p class="ayuda" role="status">Confirmando tu email…</p>
+    }
+  }
+</div>

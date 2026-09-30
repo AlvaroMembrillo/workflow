@@ -30,3 +30,16 @@ export interface UsuarioSesion {
   /** Momento de caducidad del token, en milisegundos desde epoch. */
   expira: number;
 }
+
+/** La cuenta del usuario, tal como la devuelve GET /api/usuarios/me. */
+export interface Usuario {
+  id: string;
+  email: string;
+  nombre: string;
+  rol: Rol;
+  fechaCreacion: string;
+  /** Ha confirmado que el email es suyo con el enlace enviado por correo. */
+  emailVerificado: boolean;
+  /** Quiere recibir avisos por correo (nueva candidatura, cambio de estado). */
+  avisosPorCorreo: boolean;
+}

@@ -11,7 +11,7 @@ import {
 } from '@angular/router';
 
 import { tokenDePrueba } from '../../../testing/token-de-prueba';
-import { destinoTrasAcceso, requiereRol, soloSinSesion } from './guards';
+import { destinoTrasAcceso, requiereRol, requiereSesion, soloSinSesion } from './guards';
 import { Rol } from './modelos';
 
 describe('guards', () => {
@@ -48,6 +48,18 @@ describe('guards', () => {
     it('con otro rol lleva al inicio de ese usuario', () => {
       configurar('CANDIDATO');
       expect(ejecutar(requiereRol('EMPRESA'), '/empresa')).toBe('/');
+    });
+  });
+
+  describe('requiereSesion', () => {
+    it('sin sesión lleva a la pantalla de acceso y guarda adónde volver', () => {
+      configurar();
+      expect(ejecutar(requiereSesion, '/cuenta')).toBe('/entrar?volver=%2Fcuenta');
+    });
+
+    it('deja pasar con cualquier tipo de cuenta', () => {
+      configurar('EMPRESA');
+      expect(ejecutar(requiereSesion, '/cuenta')).toBe(true);
     });
   });
 

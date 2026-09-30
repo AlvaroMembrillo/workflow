@@ -15,6 +15,10 @@ export function requiereRol(rol: Rol): CanActivateFn {
   };
 }
 
+/** La ruta necesita sesión, con cualquier tipo de cuenta. */
+export const requiereSesion: CanActivateFn = (_ruta, estado) =>
+  inject(Sesion).iniciada() || pantallaDeAcceso(estado.url);
+
 /** Acceso y registro: con la sesión ya iniciada no tienen sentido, así que se va al inicio del usuario. */
 export const soloSinSesion: CanActivateFn = () => {
   const sesion = inject(Sesion);
