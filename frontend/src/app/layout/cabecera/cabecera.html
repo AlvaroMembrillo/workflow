@@ -35,6 +35,13 @@
               >
             </li>
           }
+          @case ('ADMIN') {
+            <li>
+              <a routerLink="/admin" routerLinkActive="activo" ariaCurrentWhenActive="page"
+                >Moderación</a
+              >
+            </li>
+          }
           @default {
             <li><a routerLink="/registro" [queryParams]="{ tipo: 'empresa' }">Para empresas</a></li>
           }

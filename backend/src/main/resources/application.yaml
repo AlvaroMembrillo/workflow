@@ -70,6 +70,12 @@ app:
     remitente: ${CORREO_REMITENTE:Workflow <no-responder@workflow.localhost>}
     # Dirección de la web, para los enlaces de los correos
     url-publica: ${URL_PUBLICA:http://localhost:4200}
+    # Quien atiende el portal: recibe las denuncias y se da como contacto
+    contacto: ${CORREO_CONTACTO:soporte@workflow.localhost}
+  admin:
+    # Si se indican, al arrancar se crea esta cuenta de administrador (si no existe ya)
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
   enlaces:
     validez-verificacion: 48h
     validez-restablecimiento: 1h

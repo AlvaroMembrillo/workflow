@@ -11,10 +11,12 @@ import jakarta.validation.constraints.NotNull;
 /**
  * @param remitente dirección que aparece como remitente, por ejemplo {@code Workflow <no-responder@ejemplo.com>}
  * @param urlPublica dirección de la web, para construir los enlaces de los correos
+ * @param contacto dirección de las personas que atienden el portal: recibe las denuncias y se da como
+ *        contacto en los correos de moderación
  */
 @Validated
 @ConfigurationProperties(prefix = "app.correo")
-public record CorreoProperties(@NotBlank String remitente, @NotNull URI urlPublica) {
+public record CorreoProperties(@NotBlank String remitente, @NotNull URI urlPublica, @NotBlank String contacto) {
 
 	/** Dirección completa de una página de la web, por ejemplo {@code enlace("/mis-candidaturas")}. */
 	public String enlace(String ruta) {

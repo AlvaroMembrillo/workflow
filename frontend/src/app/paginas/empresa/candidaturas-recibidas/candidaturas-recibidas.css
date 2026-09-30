@@ -38,6 +38,11 @@
   color: var(--ok-fg);
 }
 
+.estado-oferta.retirada {
+  background: var(--no-bg);
+  color: var(--no-fg);
+}
+
 .pestanas {
   display: flex;
   flex-wrap: wrap;

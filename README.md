@@ -23,6 +23,7 @@ estados. Estas cuentas tienen la contraseña `demo-workflow`:
 | `ana@demo.test` | Candidata | Mis candidaturas: una en revisión, una seleccionada, una no seleccionada y una enviada. En "Mi cuenta", su currículum |
 | `rrhh@lumen.test` | Empresa | Panel de Lumen Seguros: la oferta de Java tiene candidaturas pendientes, una con 7 días de espera, y el currículum de cada candidato |
 | `luis@demo.test` | Candidato | Una candidatura retirada |
+| `admin@demo.test` | Moderación | Una denuncia pendiente de revisar |
 
 Los correos que envía la aplicación (confirmar el email, cambiar la contraseña, avisos de candidaturas)
 no salen a internet: se recogen en http://localhost:8026. Si creas una cuenta, el enlace para confirmarla
@@ -111,6 +112,10 @@ gestionan las candidaturas que reciben. La documentación completa está en Swag
 | `GET /api/ofertas/{id}/candidaturas` | Empresa propietaria | Candidaturas recibidas en una oferta, con filtro opcional `estado` |
 | `GET /api/candidaturas/{id}/cv` | Empresa propietaria | Descarga el currículum del candidato de una candidatura recibida |
 | `PATCH /api/candidaturas/{id}/estado` | Empresa propietaria | `PENDIENTE` → `EN_REVISION` → `ACEPTADA` o `RECHAZADA` |
+| `POST /api/ofertas/{id}/denuncias` | Token | Denuncia una oferta que incumple las normas |
+| `GET /api/admin/denuncias` | Administrador | Denuncias pendientes (o `?estado=ACEPTADA`, `DESESTIMADA`) |
+| `POST /api/admin/denuncias/{id}/resolucion` | Administrador | Retira la oferta o desestima la denuncia |
+| `POST /api/admin/empresas/{id}/suspension` | Administrador | Suspende la cuenta de una empresa |
 
 Las ofertas abiertas que llevan 60 días sin cambios se cierran solas cada noche, para que el listado no
 acumule vacantes que ya no están activas.
@@ -158,6 +163,13 @@ Para probarlo desde Swagger UI: llama a `/api/auth/login`, copia el `accessToken
   varias habría que pasarlas a Redis.
 - **Email confirmado para publicar e inscribirse.** Una empresa no puede publicar ofertas ni un candidato
   inscribirse hasta confirmar su email (`403`). Navegar, completar el perfil o subir el currículum sí.
+- **Denuncias y moderación.** Cualquier usuario con sesión puede denunciar una oferta (una vez) y el equipo
+  recibe un correo. En el panel de moderación, un administrador la **retira** (deja de ser visible, la
+  empresa no puede editarla ni reabrirla y se le avisa por correo), **desestima** la denuncia o **suspende**
+  la cuenta de la empresa, lo que retira todas sus ofertas, cierra sus sesiones y le impide entrar.
+  Las cuentas de administrador no se crean desde el registro: se indica una con `ADMIN_EMAIL` y
+  `ADMIN_PASSWORD` (12 caracteres como mínimo) y se crea al arrancar si no existe. Las denuncias llegan a
+  `CORREO_CONTACTO`.
 
 ### Correo
 

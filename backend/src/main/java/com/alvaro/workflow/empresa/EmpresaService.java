@@ -43,6 +43,13 @@ public class EmpresaService {
 		return empresaMapper.toResponse(empresa);
 	}
 
+	/** Para otros módulos (por ejemplo, moderación) que trabajan sobre una empresa. */
+	@Transactional(readOnly = true)
+	public Empresa empresa(UUID id) {
+		return empresas.findById(id)
+				.orElseThrow(() -> new EmpresaNoEncontradaException("No existe ninguna empresa con id " + id));
+	}
+
 	/** Para otros módulos (por ejemplo, las ofertas) que necesitan la empresa del usuario autenticado. */
 	@Transactional(readOnly = true)
 	public Empresa empresaDelUsuario(UUID usuarioId) {

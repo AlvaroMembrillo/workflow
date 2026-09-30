@@ -74,6 +74,23 @@ for (const tema of ['light', 'dark'] as const) {
       await auditar(page);
     });
 
+    test('denunciar una oferta y el panel de moderación', async ({ page, request }) => {
+      const oferta = await ofertaPorTitulo(request, 'Carretillero/a');
+      await entrar(page, 'luis@demo.test', PASSWORD_DEMO);
+      await page.goto(`/ofertas/${oferta.id}`);
+      await page.getByRole('button', { name: 'Denunciar esta oferta' }).click();
+      const formulario = page.getByRole('dialog', { name: 'Denunciar esta oferta' });
+      await formulario.getByRole('button', { name: 'Enviar denuncia' }).click();
+      await expect(formulario).toContainText('Elige un motivo');
+      await auditar(page);
+      await formulario.getByRole('button', { name: 'Cancelar' }).click();
+      await page.getByRole('button', { name: 'Salir' }).click();
+
+      await entrar(page, 'admin@demo.test', PASSWORD_DEMO);
+      await expect(page.locator('li.denuncia').first()).toBeVisible();
+      await auditar(page);
+    });
+
     test('mis candidaturas', async ({ page }) => {
       await entrar(page, 'ana@demo.test', PASSWORD_DEMO);
       await page.goto('/mis-candidaturas');

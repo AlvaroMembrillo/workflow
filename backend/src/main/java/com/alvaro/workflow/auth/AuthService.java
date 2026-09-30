@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alvaro.workflow.auth.dto.LoginRequest;
 import com.alvaro.workflow.auth.dto.RegistroRequest;
 import com.alvaro.workflow.auth.dto.TokenResponse;
+import com.alvaro.workflow.correo.CorreoProperties;
 import com.alvaro.workflow.empresa.EmpresaService;
 import com.alvaro.workflow.usuario.Rol;
 import com.alvaro.workflow.usuario.Usuario;
@@ -28,6 +29,7 @@ public class AuthService {
 	private final EmpresaService empresaService;
 	private final VerificacionEmailService verificacionEmail;
 	private final SesionService sesiones;
+	private final CorreoProperties correo;
 
 	/**
 	 * Lo que recibe el cliente al abrir o renovar una sesión.
@@ -78,8 +80,12 @@ public class AuthService {
 		Authentication autenticacion = authenticationManager.authenticate(
 				UsernamePasswordAuthenticationToken.unauthenticated(Usuario.normalizarEmail(request.email()), request.password()));
 
-		UsuarioAutenticado usuario = (UsuarioAutenticado) autenticacion.getPrincipal();
-		return abrirSesion(usuario.usuario());
+		Usuario usuario = ((UsuarioAutenticado) autenticacion.getPrincipal()).usuario();
+		// Se comprueba después de la contraseña: así solo el dueño de la cuenta se entera de que está suspendida
+		if (usuario.isSuspendido()) {
+			throw new CuentaSuspendidaException(correo.contacto());
+		}
+		return abrirSesion(usuario);
 	}
 
 	/** Canjea el token de refresco de la cookie por un token de acceso nuevo. */

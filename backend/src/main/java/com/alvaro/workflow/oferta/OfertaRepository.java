@@ -1,6 +1,7 @@
 package com.alvaro.workflow.oferta;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,8 @@ public interface OfertaRepository extends JpaRepository<Oferta, UUID>, JpaSpecif
 
 	@EntityGraph(attributePaths = "empresa")
 	Page<Oferta> findByEmpresaId(UUID empresaId, Pageable pageable);
+
+	List<Oferta> findByEmpresaIdAndEstadoNot(UUID empresaId, EstadoOferta estado);
 
 	/** Casi siempre se necesita la empresa (para la respuesta o para comprobar la propiedad de la oferta). */
 	@Override

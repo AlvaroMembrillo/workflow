@@ -26,7 +26,14 @@ export const soloSinSesion: CanActivateFn = () => {
 };
 
 export function inicioPara(rol: Rol | null): string {
-  return rol === 'EMPRESA' ? '/empresa' : '/';
+  switch (rol) {
+    case 'EMPRESA':
+      return '/empresa';
+    case 'ADMIN':
+      return '/admin';
+    default:
+      return '/';
+  }
 }
 
 /**

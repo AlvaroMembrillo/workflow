@@ -1,5 +1,6 @@
 package com.alvaro.workflow.oferta;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -32,7 +33,12 @@ public class OfertaService {
 
 	@Transactional(readOnly = true)
 	public OfertaResponse obtener(UUID id) {
-		return ofertaMapper.toResponse(oferta(id));
+		Oferta oferta = oferta(id);
+		// Para el público, una oferta retirada por moderación ya no existe
+		if (oferta.estaRetirada()) {
+			throw new OfertaNoEncontradaException(id);
+		}
+		return ofertaMapper.toResponse(oferta);
 	}
 
 	/** Una oferta de la empresa del usuario; 403 si es de otra empresa. */
@@ -56,6 +62,10 @@ public class OfertaService {
 		if (!empresa.getUsuario().isEmailVerificado()) {
 			throw new EmailSinVerificarException("publicar ofertas");
 		}
+		// Una cuenta suspendida conserva su token de acceso unos minutos: no debe poder publicar con él
+		if (empresa.getUsuario().isSuspendido()) {
+			throw new AccesoDenegadoException("Tu cuenta está suspendida");
+		}
 		Oferta oferta = ofertas.save(new Oferta(empresa, ofertaMapper.toDatos(request)));
 		return ofertaMapper.toResponse(oferta);
 	}
@@ -70,9 +80,20 @@ public class OfertaService {
 
 	@Transactional
 	public OfertaResponse cambiarEstado(UUID usuarioId, UUID ofertaId, EstadoOferta estado) {
+		if (estado == EstadoOferta.RETIRADA) {
+			throw new PeticionNoValidaException("Estado no permitido", "Una oferta solo se puede abrir o cerrar");
+		}
 		Oferta oferta = ofertaDeLaEmpresaDelUsuario(usuarioId, ofertaId);
 		oferta.cambiarEstado(estado);
 		return ofertaMapper.toResponse(ofertas.saveAndFlush(oferta));
+	}
+
+	/** Moderación retira todas las ofertas de una empresa suspendida. Devuelve cuántas ha retirado. */
+	@Transactional
+	public int retirarTodasDeLaEmpresa(UUID empresaId) {
+		List<Oferta> visibles = ofertas.findByEmpresaIdAndEstadoNot(empresaId, EstadoOferta.RETIRADA);
+		visibles.forEach(Oferta::retirar);
+		return visibles.size();
 	}
 
 	/** Para otros módulos (por ejemplo, las candidaturas) que trabajan sobre una oferta. */

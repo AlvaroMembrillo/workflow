@@ -1,4 +1,11 @@
-import { Curriculum, Empresa, MiCandidatura, Oferta, Pagina } from '../app/core/api/modelos';
+import {
+  Curriculum,
+  Denuncia,
+  Empresa,
+  MiCandidatura,
+  Oferta,
+  Pagina,
+} from '../app/core/api/modelos';
 import { Usuario } from '../app/core/auth/modelos';
 
 export function ofertaDePrueba(cambios: Partial<Oferta> = {}): Oferta {
@@ -48,6 +55,29 @@ export function curriculumDePrueba(cambios: Partial<Curriculum> = {}): Curriculu
     nombreFichero: 'CV Ana García.pdf',
     tamano: 182_400,
     fechaSubida: '2026-09-28T10:00:00Z',
+    ...cambios,
+  };
+}
+
+export function denunciaDePrueba(cambios: Partial<Denuncia> = {}): Denuncia {
+  return {
+    id: 'denuncia-1',
+    motivo: 'FRAUDE',
+    detalle: 'Piden 200 € para el material.',
+    estado: 'PENDIENTE',
+    fechaCreacion: '2026-09-29T10:00:00Z',
+    fechaResolucion: null,
+    emailDenunciante: 'ana@test.com',
+    oferta: {
+      id: 'oferta-1',
+      titulo: 'Gana 3000 € desde casa',
+      descripcion: 'Trabajo fácil sin experiencia.',
+      estado: 'ABIERTA',
+      empresaId: 'empresa-1',
+      empresaNombre: 'Dinero Fácil',
+      empresaEmail: 'hola@dinerofacil.test',
+      empresaSuspendida: false,
+    },
     ...cambios,
   };
 }

@@ -2,7 +2,8 @@
 
 export type Modalidad = 'PRESENCIAL' | 'HIBRIDO' | 'REMOTO';
 export type TipoContrato = 'INDEFINIDO' | 'TEMPORAL' | 'PRACTICAS' | 'FREELANCE';
-export type EstadoOferta = 'ABIERTA' | 'CERRADA';
+/** RETIRADA: la ha retirado moderación; la empresa no puede reabrirla ni editarla. */
+export type EstadoOferta = 'ABIERTA' | 'CERRADA' | 'RETIRADA';
 export type EstadoCandidatura = 'PENDIENTE' | 'EN_REVISION' | 'ACEPTADA' | 'RECHAZADA' | 'RETIRADA';
 
 export const MODALIDADES: readonly Modalidad[] = ['PRESENCIAL', 'HIBRIDO', 'REMOTO'];
@@ -131,4 +132,36 @@ export interface EmpresaRequest {
   descripcion: string | null;
   sitioWeb: string | null;
   ubicacion: string | null;
+}
+
+export type MotivoDenuncia = 'FRAUDE' | 'DISCRIMINACION' | 'ENGANOSA' | 'OTRO';
+export type EstadoDenuncia = 'PENDIENTE' | 'ACEPTADA' | 'DESESTIMADA';
+
+export const MOTIVOS_DENUNCIA: readonly MotivoDenuncia[] = [
+  'FRAUDE',
+  'DISCRIMINACION',
+  'ENGANOSA',
+  'OTRO',
+];
+
+/** Una denuncia en el panel de moderación. */
+export interface Denuncia {
+  id: string;
+  motivo: MotivoDenuncia;
+  detalle: string | null;
+  estado: EstadoDenuncia;
+  fechaCreacion: string;
+  fechaResolucion: string | null;
+  /** null si quien denunció ha borrado su cuenta. */
+  emailDenunciante: string | null;
+  oferta: {
+    id: string;
+    titulo: string;
+    descripcion: string;
+    estado: EstadoOferta;
+    empresaId: string;
+    empresaNombre: string;
+    empresaEmail: string;
+    empresaSuspendida: boolean;
+  };
 }

@@ -115,6 +115,13 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'admin',
+    title: 'Moderación',
+    canActivate: [requiereRol('ADMIN')],
+    runGuardsAndResolvers: 'always',
+    loadComponent: () => import('./paginas/admin/moderacion/moderacion').then((m) => m.Moderacion),
+  },
+  {
     path: '**',
     title: 'Página no encontrada',
     loadComponent: () =>

@@ -40,7 +40,12 @@
 
           <app-progreso-candidatura [candidatura]="candidatura" />
 
-          @if (candidatura.oferta.estado === 'CERRADA' && sePuedeRetirar(candidatura)) {
+          @if (candidatura.oferta.estado === 'RETIRADA') {
+            <p class="nota">
+              <svg lucideInfo [size]="16"></svg>
+              Hemos retirado esta oferta porque incumplía las normas de publicación.
+            </p>
+          } @else if (candidatura.oferta.estado === 'CERRADA' && sePuedeRetirar(candidatura)) {
             <p class="nota">
               <svg lucideInfo [size]="16"></svg>
               La empresa ha cerrado la oferta, pero todavía puede responderte.
