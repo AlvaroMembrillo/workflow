@@ -43,6 +43,7 @@ class DatosDeDemostracionTests {
 		assertThat(contar("select count(*) from empresas")).isEqualTo(6);
 		assertThat(contar("select count(*) from ofertas where estado = 'ABIERTA'")).isEqualTo(15);
 		assertThat(contar("select count(*) from usuarios where rol = 'CANDIDATO'")).isEqualTo(3);
+		assertThat(contar("select count(*) from curriculos")).isEqualTo(3);
 
 		Map<String, Long> porEstado = new HashMap<>();
 		jdbc.query("select estado, count(*) from candidaturas group by estado",

@@ -3,6 +3,7 @@ package com.alvaro.workflow;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +13,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
-import org.springframework.test.web.servlet.assertj.MockMvcTester.MockMvcRequestBuilder;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 
 import com.alvaro.workflow.correo.BuzonDePrueba;
 import com.alvaro.workflow.correo.CorreoDePruebaConfiguration;
@@ -67,6 +69,22 @@ public abstract class IntegrationTestBase {
 		return token;
 	}
 
+	/** Sube un currículum como lo hace el formulario de la web. */
+	protected MvcTestResult subirCv(String token, String nombre, byte[] contenido) {
+		return conToken(mvc.post().uri("/api/candidatos/me/cv"), token).multipart()
+				.file(new MockMultipartFile("fichero", nombre, MediaType.APPLICATION_PDF_VALUE, contenido))
+				.exchange();
+	}
+
+	/** Un fichero que empieza como un PDF, que es lo que comprueba la API. */
+	protected static byte[] pdf(String texto) {
+		return ("%PDF-1.4\n" + texto).getBytes(StandardCharsets.UTF_8);
+	}
+
+	protected MvcTestResult delete(String uri, String token) {
+		return conToken(mvc.delete().uri(uri), token).exchange();
+	}
+
 	protected MvcTestResult get(String uri, String token) {
 		return conToken(mvc.get().uri(uri), token).exchange();
 	}
@@ -107,7 +125,7 @@ public abstract class IntegrationTestBase {
 		return leer(respuesta, "$.accessToken");
 	}
 
-	private static MockMvcRequestBuilder conToken(MockMvcRequestBuilder peticion, String token) {
+	private static <B extends AbstractMockHttpServletRequestBuilder<B>> B conToken(B peticion, String token) {
 		return token == null ? peticion : peticion.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 	}
 

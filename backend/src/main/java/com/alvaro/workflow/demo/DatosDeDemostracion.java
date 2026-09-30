@@ -19,6 +19,7 @@ import com.alvaro.workflow.auth.dto.RegistroRequest;
 import com.alvaro.workflow.candidatura.CandidaturaService;
 import com.alvaro.workflow.candidatura.EstadoCandidatura;
 import com.alvaro.workflow.candidatura.dto.CandidaturaRequest;
+import com.alvaro.workflow.cv.CurriculumService;
 import com.alvaro.workflow.empresa.EmpresaService;
 import com.alvaro.workflow.empresa.dto.EmpresaRequest;
 import com.alvaro.workflow.oferta.Modalidad;
@@ -52,6 +53,7 @@ public class DatosDeDemostracion {
 	private final EmpresaService empresaService;
 	private final OfertaService ofertaService;
 	private final CandidaturaService candidaturaService;
+	private final CurriculumService curriculumService;
 	private final JdbcTemplate jdbc;
 
 	private record EmpresaDemo(String email, String nombre, String ubicacion, String web, String descripcion) {
@@ -61,7 +63,8 @@ public class DatosDeDemostracion {
 			TipoContrato contrato, int salarioMinimo, int salarioMaximo, int hace, String descripcion) {
 	}
 
-	private record CandidatoDemo(String email, String nombre) {
+	/** @param perfil líneas del currículum de ejemplo que se genera en PDF */
+	private record CandidatoDemo(String email, String nombre, List<String> perfil) {
 	}
 
 	/**
@@ -145,9 +148,27 @@ public class DatosDeDemostracion {
 					"Temporada de invierno con alojamiento incluido para quien venga de fuera."));
 
 	private static final List<CandidatoDemo> CANDIDATOS = List.of(
-			new CandidatoDemo("ana@demo.test", "Ana García"),
-			new CandidatoDemo("luis@demo.test", "Luis Ortega"),
-			new CandidatoDemo("marta@demo.test", "Marta Sanz"));
+			new CandidatoDemo("ana@demo.test", "Ana García", List.of(
+					"Desarrolladora backend con 4 años de experiencia en Java y Spring Boot.",
+					"",
+					"2022 - hoy   Desarrolladora backend en Seguros Alba (Madrid)",
+					"2020 - 2022  Programadora junior en Consultora Ribera (Toledo)",
+					"",
+					"Grado en Ingeniería Informática, Universidad de Castilla-La Mancha",
+					"Inglés C1")),
+			new CandidatoDemo("luis@demo.test", "Luis Ortega", List.of(
+					"Desarrollador .NET con 6 años de experiencia que quiere pasarse a Java.",
+					"",
+					"2019 - hoy   Desarrollador en Logística Duero (Valladolid)",
+					"",
+					"Ciclo superior de Desarrollo de Aplicaciones Web")),
+			new CandidatoDemo("marta@demo.test", "Marta Sanz", List.of(
+					"Diseñadora de producto especializada en accesibilidad.",
+					"",
+					"2021 - hoy   Diseñadora UX/UI en Estudio Cierzo (Zaragoza)",
+					"2018 - 2021  Diseñadora gráfica autónoma",
+					"",
+					"Grado en Diseño, Escuela Superior de Diseño de Aragón")));
 
 	private static final List<CandidaturaDemo> CANDIDATURAS = List.of(
 			new CandidaturaDemo("ana@demo.test", "java", EstadoCandidatura.EN_REVISION, 8, 2, null,
@@ -177,7 +198,10 @@ public class DatosDeDemostracion {
 			idPorEmail.put(empresa.email(), id);
 		}
 		for (CandidatoDemo candidato : CANDIDATOS) {
-			idPorEmail.put(candidato.email(), registrar(candidato.email(), candidato.nombre(), Rol.CANDIDATO));
+			UUID id = registrar(candidato.email(), candidato.nombre(), Rol.CANDIDATO);
+			idPorEmail.put(candidato.email(), id);
+			curriculumService.guardar(id, "CV " + candidato.nombre() + ".pdf",
+					PdfSencillo.conLineas(candidato.nombre(), candidato.perfil()));
 		}
 
 		Map<String, UUID> ofertaPorClave = new HashMap<>();
