@@ -20,8 +20,8 @@ estados. Estas cuentas tienen la contraseña `demo-workflow`:
 
 | Cuenta | Tipo | Qué ver |
 |---|---|---|
-| `ana@demo.test` | Candidata | Mis candidaturas: una en revisión, una seleccionada, una no seleccionada y una enviada |
-| `rrhh@lumen.test` | Empresa | Panel de Lumen Seguros: la oferta de Java tiene candidaturas pendientes, una con 7 días de espera |
+| `ana@demo.test` | Candidata | Mis candidaturas: una en revisión, una seleccionada, una no seleccionada y una enviada. En "Mi cuenta", su currículum |
+| `rrhh@lumen.test` | Empresa | Panel de Lumen Seguros: la oferta de Java tiene candidaturas pendientes, una con 7 días de espera, y el currículum de cada candidato |
 | `luis@demo.test` | Candidato | Una candidatura retirada |
 
 Los correos que envía la aplicación (confirmar el email, cambiar la contraseña, avisos de candidaturas)
@@ -107,11 +107,19 @@ gestionan las candidaturas que reciben. La documentación completa está en Swag
 | `GET /api/candidaturas/me` | Candidato | Sus candidaturas, el estado de cada una y la fecha de cada paso |
 | `GET /api/ofertas/{id}/mi-candidatura` | Candidato | Su candidatura en una oferta, si se ha inscrito |
 | `POST /api/candidaturas/{id}/retirada` | Candidato propietario | Retira la candidatura mientras no haya decisión |
+| `POST`, `GET` y `DELETE /api/candidatos/me/cv` | Candidato | Sube (PDF, 5 MB como máximo), consulta o borra su currículum; `GET .../cv/fichero` lo descarga |
 | `GET /api/ofertas/{id}/candidaturas` | Empresa propietaria | Candidaturas recibidas en una oferta, con filtro opcional `estado` |
+| `GET /api/candidaturas/{id}/cv` | Empresa propietaria | Descarga el currículum del candidato de una candidatura recibida |
 | `PATCH /api/candidaturas/{id}/estado` | Empresa propietaria | `PENDIENTE` → `EN_REVISION` → `ACEPTADA` o `RECHAZADA` |
 
 Las ofertas abiertas que llevan 60 días sin cambios se cierran solas cada noche, para que el listado no
 acumule vacantes que ya no están activas.
+
+El **currículum** es un PDF por candidato que se envía con todas sus candidaturas. Como es un fichero que
+sube un usuario, la API comprueba que el contenido empieza como un PDF (no se fía de la extensión), limpia
+el nombre y lo entrega siempre como descarga y sin cachés. Solo puede descargarlo la empresa de una oferta
+en la que el candidato sigue inscrito; si retira la candidatura o quita el currículum, deja de estar
+disponible. No se analiza con un antivirus: en producción convendría pasarlo por ClamAV.
 
 Los errores siguen el formato [Problem Details (RFC 9457)](https://www.rfc-editor.org/rfc/rfc9457), con el
 detalle de cada campo cuando falla la validación.
