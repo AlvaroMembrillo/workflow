@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 
 import { usuarioDePrueba } from '../../../../testing/datos-de-prueba';
-import { tokenDePrueba } from '../../../../testing/token-de-prueba';
+import { iniciarSesionDePrueba } from '../../../../testing/sesion-de-prueba';
 import { VerificarEmail } from './verificar-email';
 
 describe('Verificar email', () => {
@@ -14,9 +14,6 @@ describe('Verificar email', () => {
   /** Abre la página como si se llegara desde el enlace del correo: /verificar-email#token */
   function abrir(token: string | null, conSesion = false): void {
     localStorage.clear();
-    if (conSesion) {
-      localStorage.setItem('workflow.token', tokenDePrueba());
-    }
     TestBed.configureTestingModule({
       imports: [VerificarEmail],
       providers: [
@@ -27,6 +24,9 @@ describe('Verificar email', () => {
       ],
     });
     backend = TestBed.inject(HttpTestingController);
+    if (conSesion) {
+      iniciarSesionDePrueba();
+    }
     fixture = TestBed.createComponent(VerificarEmail);
     TestBed.tick();
   }

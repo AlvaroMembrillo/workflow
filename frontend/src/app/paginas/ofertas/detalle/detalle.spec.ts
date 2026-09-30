@@ -9,7 +9,7 @@ import {
   curriculumDePrueba,
   ofertaDePrueba,
 } from '../../../../testing/datos-de-prueba';
-import { tokenDePrueba } from '../../../../testing/token-de-prueba';
+import { iniciarSesionDePrueba } from '../../../../testing/sesion-de-prueba';
 import { Curriculum } from '../../../core/api/modelos';
 import { Rol } from '../../../core/auth/modelos';
 import { Detalle } from './detalle';
@@ -20,14 +20,14 @@ describe('Detalle de oferta', () => {
 
   function configurar(rol?: Rol): void {
     localStorage.clear();
-    if (rol) {
-      localStorage.setItem('workflow.token', tokenDePrueba({ rol }));
-    }
     TestBed.configureTestingModule({
       imports: [Detalle],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     backend = TestBed.inject(HttpTestingController);
+    if (rol) {
+      iniciarSesionDePrueba({ rol });
+    }
   }
 
   /**

@@ -126,13 +126,19 @@ detalle de cada campo cuando falla la validación.
 
 ## Autenticación
 
-La API usa **JWT emitidos por el propio backend**. El usuario se registra o inicia sesión, recibe un token
-firmado y lo envía en cada petición con la cabecera `Authorization: Bearer <token>`.
+La API usa **JWT emitidos por el propio backend**. El usuario se registra o inicia sesión y recibe dos cosas:
+
+- un **token de acceso** firmado, que dura 15 minutos y se envía en cada petición con la cabecera
+  `Authorization: Bearer <token>`;
+- un **token de refresco** en una cookie `HttpOnly`, que dura 30 días y solo sirve para pedir otro token de
+  acceso en `/api/auth/refresco`. Así la sesión aguanta recargas y días sin tener que volver a entrar.
 
 | Endpoint | Acceso | Descripción |
 |---|---|---|
-| `POST /api/auth/registro` | Público | Crea una cuenta de `CANDIDATO` o `EMPRESA` y devuelve un token |
-| `POST /api/auth/login` | Público | Devuelve un token si el email y la contraseña son correctos |
+| `POST /api/auth/registro` | Público | Crea una cuenta de `CANDIDATO` o `EMPRESA` y abre su sesión |
+| `POST /api/auth/login` | Público | Abre una sesión si el email y la contraseña son correctos |
+| `POST /api/auth/refresco` | Cookie | Devuelve otro token de acceso y el siguiente token de refresco |
+| `POST /api/auth/salida` | Cookie | Cierra la sesión: invalida el token de refresco y borra la cookie |
 | `POST /api/auth/verificacion` | Público | Confirma el email con el token del enlace enviado por correo |
 | `POST /api/auth/verificacion/reenvio` | Token | Envía otro enlace de confirmación |
 | `POST /api/auth/recuperacion` | Público | Envía un enlace para cambiar la contraseña olvidada |
@@ -171,8 +177,18 @@ y la dirección de la web con `URL_PUBLICA`, que se usa en los enlaces.
   cambiar configuración (`issuer-uri`).
 - **Firma RS256 con claves RSA.** Solo el backend tiene la clave privada; la pública podría publicarse para
   que otros servicios validen los tokens sin poder emitirlos.
-- **Sin estado.** No hay sesión en el servidor. Como el token viaja en una cabecera y no en una cookie,
-  CSRF no aplica.
+- **Token de acceso corto y token de refresco rotatorio.** Un JWT no se puede revocar, así que dura poco.
+  El token de refresco es opaco, se guarda como SHA-256 y solo se puede canjear una vez: cada renovación
+  entrega el siguiente. Si alguien presenta uno ya canjeado, puede que lo hayan robado, y se cierra toda la
+  sesión. Dos pestañas que renuevan a la vez con la misma cookie no cuentan como robo (10 segundos de margen).
+- **El token de refresco no es accesible desde JavaScript.** Va en una cookie `HttpOnly`, `Secure`,
+  `SameSite=Strict` y con `Path=/api/auth`: un XSS no puede llevársela y solo viaja a los endpoints de
+  sesión. La web guarda el token de acceso en memoria, no en `localStorage`.
+- **CSRF.** La API se autentica con la cabecera `Authorization`, que el navegador no añade por su cuenta.
+  La cookie solo llega a `/refresco` y `/salida`, no se envía desde otras webs (`SameSite=Strict`) y las
+  peticiones con un `Origin` que no sea el de la web se rechazan.
+- **Cerrar sesión es real.** Salir invalida el token de refresco en el servidor, y cambiar la contraseña
+  cierra las sesiones de los demás dispositivos.
 - **Contraseñas con BCrypt** mediante `DelegatingPasswordEncoder`, que guarda el algoritmo junto al hash
   para poder cambiarlo en el futuro sin invalidar las contraseñas existentes.
 - **Sin pistas para atacantes:** el login responde igual si el email no existe o si la contraseña es
@@ -189,8 +205,5 @@ si no existe, la aplicación no arranca. Para generarlo:
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out clave-privada.pem
 ```
 
-Otras variables: `CORS_ORIGENES_PERMITIDOS` (por defecto `http://localhost:4200`).
-
-### Siguientes pasos
-
-- Tokens de refresco en cookie `HttpOnly`, para sesiones largas sin alargar la vida del token de acceso
+Otras variables: `CORS_ORIGENES_PERMITIDOS` (por defecto `http://localhost:4200`) y `COOKIE_SEGURA`
+(por defecto `true`; los perfiles `dev` y `demo` la desactivan porque se abren por HTTP en `localhost`).

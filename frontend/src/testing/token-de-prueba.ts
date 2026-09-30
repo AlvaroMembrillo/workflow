@@ -1,6 +1,6 @@
 import { Rol } from '../app/core/auth/modelos';
 
-interface OpcionesToken {
+export interface OpcionesToken {
   rol?: Rol;
   email?: string;
   id?: string;

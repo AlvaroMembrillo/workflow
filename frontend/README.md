@@ -29,10 +29,13 @@ src/
 ## Decisiones
 
 - **Sin zone.js.** El estado vive en signals y la detección de cambios es `OnPush`.
-- **Sesión.** El JWT se guarda en `localStorage` para mantener la sesión al recargar. El frontend solo
-  lee sus datos (rol y caducidad) para adaptar la interfaz; la firma la valida el backend. Cuando el
-  token caduca, la sesión se cierra sola y las pantallas privadas llevan a la de acceso, que después
-  devuelve al usuario adonde estaba.
+- **Sesión.** El token de acceso (15 minutos) vive solo en memoria. Lo que mantiene la sesión al recargar
+  es el token de refresco, en una cookie `HttpOnly` que el código de la web no puede leer: al abrirse, la
+  aplicación pide con ella un token de acceso antes de evaluar las rutas. El token se renueva solo poco
+  antes de caducar y, si una petición recibe un 401, se renueva y se repite una vez. Cuando ya no se puede
+  renovar, la sesión se cierra y las pantallas privadas llevan a la de acceso, que después devuelve al
+  usuario adonde estaba. En `localStorage` solo hay una marca de que existe sesión, que también sirve
+  para que las demás pestañas se enteren de que se ha entrado o salido.
 - **Redirecciones seguras.** El parámetro `?volver=` solo acepta rutas internas, para evitar que un
   enlace lleve a otra web tras iniciar sesión.
 - **Errores de la API.** Las respuestas Problem Details se muestran junto al campo que falla o, si no

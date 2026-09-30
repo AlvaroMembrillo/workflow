@@ -1,5 +1,10 @@
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import {
   provideRouter,
   TitleStrategy,
@@ -9,6 +14,7 @@ import {
 
 import { routes } from './app.routes';
 import { autenticacionInterceptor } from './core/auth/autenticacion-interceptor';
+import { Sesion } from './core/auth/sesion';
 import { TituloPagina } from './core/titulo-pagina';
 
 export const appConfig: ApplicationConfig = {
@@ -21,6 +27,8 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
     ),
     provideHttpClient(withFetch(), withInterceptors([autenticacionInterceptor])),
+    // Antes de mostrar nada se recupera la sesión, para que los guards de las rutas ya sepan si la hay
+    provideAppInitializer(() => inject(Sesion).restaurar()),
     { provide: TitleStrategy, useClass: TituloPagina },
   ],
 };

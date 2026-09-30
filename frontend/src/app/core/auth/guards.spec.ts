@@ -1,4 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import {
   ActivatedRouteSnapshot,
@@ -10,17 +11,19 @@ import {
   UrlTree,
 } from '@angular/router';
 
-import { tokenDePrueba } from '../../../testing/token-de-prueba';
+import { iniciarSesionDePrueba } from '../../../testing/sesion-de-prueba';
 import { destinoTrasAcceso, requiereRol, requiereSesion, soloSinSesion } from './guards';
 import { Rol } from './modelos';
 
 describe('guards', () => {
   function configurar(rol?: Rol): void {
     localStorage.clear();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    });
     if (rol) {
-      localStorage.setItem('workflow.token', tokenDePrueba({ rol }));
+      iniciarSesionDePrueba({ rol });
     }
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideRouter([])] });
   }
 
   function ejecutar(guard: typeof soloSinSesion, url: string): string | boolean {
