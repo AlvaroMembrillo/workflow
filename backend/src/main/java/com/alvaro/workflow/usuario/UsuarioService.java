@@ -18,4 +18,11 @@ public class UsuarioService {
 		return usuarios.findById(id).orElseThrow(() -> new UsuarioNoEncontradoException(id));
 	}
 
+	@Transactional
+	public Usuario cambiarPreferencias(UUID id, boolean avisosPorCorreo) {
+		Usuario usuario = buscarPorId(id);
+		usuario.cambiarAvisosPorCorreo(avisosPorCorreo);
+		return usuario;
+	}
+
 }

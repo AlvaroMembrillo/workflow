@@ -15,8 +15,27 @@ spring:
         # Páginas como {"content": [...], "page": {...}}, un formato estable para el frontend
         serialization-mode: via-dto
 
+  mail:
+    # Por defecto, Mailpit (docker compose): recoge los correos y los muestra en http://localhost:8025
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USUARIO:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      "[mail.smtp.auth]": ${SMTP_AUTENTICACION:false}
+      "[mail.smtp.starttls.enable]": ${SMTP_STARTTLS:false}
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 10000
+      "[mail.smtp.writetimeout]": 10000
+
 server:
   port: 8080
+
+management:
+  health:
+    mail:
+      # Si el servidor de correo no responde, la aplicación sigue funcionando: no debe darse por caída
+      enabled: false
 
 springdoc:
   swagger-ui:
@@ -29,6 +48,13 @@ app:
     clave-privada: ${JWT_CLAVE_PRIVADA:}
   cors:
     origenes-permitidos: ${CORS_ORIGENES_PERMITIDOS:http://localhost:4200}
+  correo:
+    remitente: ${CORREO_REMITENTE:Workflow <no-responder@workflow.localhost>}
+    # Dirección de la web, para los enlaces de los correos
+    url-publica: ${URL_PUBLICA:http://localhost:4200}
+  enlaces:
+    validez-verificacion: 48h
+    validez-restablecimiento: 1h
   ofertas:
     cierre-automatico:
       inactividad: 60d

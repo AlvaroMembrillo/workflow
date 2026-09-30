@@ -213,8 +213,7 @@ public class DatosDeDemostracion {
 	}
 
 	private UUID registrar(String email, String nombre, Rol rol) {
-		authService.registrar(new RegistroRequest(email, PASSWORD, nombre, rol));
-		return usuarios.findByEmail(email).orElseThrow().getId();
+		return authService.crearCuentaVerificada(new RegistroRequest(email, PASSWORD, nombre, rol)).getId();
 	}
 
 	/** Lleva la candidatura a su estado de ejemplo por el mismo camino que seguiría en la aplicación. */

@@ -16,12 +16,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import com.alvaro.workflow.TestcontainersConfiguration;
+import com.alvaro.workflow.correo.BuzonDePrueba;
+import com.alvaro.workflow.correo.CorreoDePruebaConfiguration;
 
 /** Arranca la aplicación con el perfil "demo" y comprueba que los datos de ejemplo se cargan bien. */
 @SpringBootTest(properties = "app.jwt.clave-privada=target/jwt-demo/clave-privada.pem")
 @AutoConfigureMockMvc
 @ActiveProfiles("demo")
-@Import(TestcontainersConfiguration.class)
+@Import({ TestcontainersConfiguration.class, CorreoDePruebaConfiguration.class })
 class DatosDeDemostracionTests {
 
 	@Autowired
@@ -32,6 +34,9 @@ class DatosDeDemostracionTests {
 
 	@Autowired
 	private MockMvcTester mvc;
+
+	@Autowired
+	private BuzonDePrueba buzon;
 
 	@Test
 	void cargaEmpresasOfertasYCandidaturasEnTodosLosEstados() {
@@ -67,6 +72,17 @@ class DatosDeDemostracionTests {
 						{"email": "rrhh@lumen.test", "password": "%s"}
 						""".formatted(DatosDeDemostracion.PASSWORD))
 				.exchange()).hasStatusOk();
+	}
+
+	@Test
+	void lasCuentasDeEjemploTienenElEmailVerificadoYRecibenLosAvisos() {
+		assertThat(contar("select count(*) from usuarios where email_verificado_en is null")).isZero();
+		// Sin correos de verificación; sí los avisos de las candidaturas de ejemplo
+		assertThat(buzon.para("rrhh@lumen.test")).isNotEmpty()
+				.allSatisfy(mensaje -> assertThat(mensaje.asunto()).startsWith("Nueva candidatura para "));
+		assertThat(buzon.para("ana@demo.test")).extracting("asunto").contains(
+				"Tu candidatura a Desarrollador/a Java Backend está en revisión",
+				"Tu candidatura a Desarrollador/a Frontend Angular ha sido seleccionada");
 	}
 
 	@Test

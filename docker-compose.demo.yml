@@ -1,6 +1,7 @@
 # Demostración completa en un solo comando:
 #   docker compose -f docker-compose.demo.yml up --build
 # y abrir http://localhost:8000. Carga datos de ejemplo (ver README).
+# Los correos que envía la aplicación no salen a internet: se ven en http://localhost:8026.
 # Es independiente del docker-compose.yml de desarrollo: usa su propia base de datos y no ocupa el puerto 5432.
 name: workflow-demo
 
@@ -19,6 +20,12 @@ services:
       timeout: 5s
       retries: 10
 
+  mailpit:
+    image: axllent/mailpit:v1.31
+    ports:
+      # 8026 y no 8025 para no chocar con el Mailpit de desarrollo (docker-compose.yml)
+      - "8026:8025"
+
   backend:
     build: ./backend
     environment:
@@ -26,11 +33,15 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/portal_empleo
       SPRING_DATASOURCE_USERNAME: portal
       SPRING_DATASOURCE_PASSWORD: portal
+      SMTP_HOST: mailpit
+      URL_PUBLICA: http://localhost:8000
     volumes:
       - jwt-demo:/datos/jwt
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     healthcheck:
       # La imagen del JRE no trae curl: se consulta /actuator/health con bash
       test:
