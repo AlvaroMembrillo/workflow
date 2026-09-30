@@ -20,7 +20,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideCircleAlert } from '@lucide/angular';
+import { LucideCircleAlert, LucideMailWarning } from '@lucide/angular';
 import { finalize, Observable } from 'rxjs';
 
 import { TarjetaOferta } from '../../../compartido/tarjeta-oferta/tarjeta-oferta';
@@ -35,6 +35,7 @@ import {
   TIPOS_CONTRATO,
 } from '../../../core/api/modelos';
 import { PanelEmpresaApi } from '../../../core/api/panel-empresa-api';
+import { Cuenta } from '../../../core/auth/cuenta';
 import { mensajeDeError, problemaDe } from '../../../core/api/problema';
 import { ConCambiosSinGuardar } from '../../../core/cambios-sin-guardar';
 import {
@@ -80,13 +81,14 @@ function rangoSalarialValido(grupo: AbstractControl): ValidationErrors | null {
  */
 @Component({
   selector: 'app-formulario-oferta',
-  imports: [ReactiveFormsModule, RouterLink, TarjetaOferta, LucideCircleAlert],
+  imports: [ReactiveFormsModule, RouterLink, TarjetaOferta, LucideCircleAlert, LucideMailWarning],
   templateUrl: './formulario-oferta.html',
   styleUrl: './formulario-oferta.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormularioOferta implements ConCambiosSinGuardar {
   private readonly api = inject(PanelEmpresaApi);
+  protected readonly cuenta = inject(Cuenta);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);

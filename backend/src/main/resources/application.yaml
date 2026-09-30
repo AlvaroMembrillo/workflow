@@ -59,6 +59,13 @@ app:
     cookie-segura: ${COOKIE_SEGURA:true}
   cors:
     origenes-permitidos: ${CORS_ORIGENES_PERMITIDOS:http://localhost:4200}
+  # Frenos contra la fuerza bruta y el envío masivo de correos (ver LimitesProperties)
+  limites:
+    fallos-de-login: { maximo: 5, ventana: 15m }
+    login-por-ip: { maximo: 50, ventana: 15m }
+    registro-por-ip: { maximo: 10, ventana: 1h }
+    correos-por-destinatario: { maximo: 3, ventana: 1h }
+    correos-por-ip: { maximo: 10, ventana: 1h }
   correo:
     remitente: ${CORREO_REMITENTE:Workflow <no-responder@workflow.localhost>}
     # Dirección de la web, para los enlaces de los correos

@@ -63,21 +63,6 @@ class AvisosDeCandidaturasIntegrationTests extends IntegrationTestBase {
 	}
 
 	@Test
-	void noSeEnvianAvisosAUnEmailSinVerificar() {
-		String emailEmpresa = emailUnico();
-		String empresa = tokenDeRegistro(registrar(emailEmpresa, "EMPRESA", "Empresa de prueba"));
-		String emailCandidato = emailUnico();
-		String candidato = tokenDeRegistro(registrar(emailCandidato, "CANDIDATO"));
-
-		String candidaturaId = inscribirse(candidato, publicarOferta(empresa));
-		cambiarEstado(candidaturaId, empresa, "EN_REVISION");
-
-		// Cada uno solo tiene el correo de verificación del registro
-		assertThat(buzon.para(emailEmpresa)).extracting(Mensaje::asunto).containsExactly("Confirma tu email en Workflow");
-		assertThat(buzon.para(emailCandidato)).extracting(Mensaje::asunto).containsExactly("Confirma tu email en Workflow");
-	}
-
-	@Test
 	void quienDesactivaLosAvisosNoLosRecibe() {
 		String empresa = nuevaEmpresa();
 		String emailCandidato = emailUnico();

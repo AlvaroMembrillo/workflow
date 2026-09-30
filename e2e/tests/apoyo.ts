@@ -15,10 +15,14 @@ export function unico(prefijo: string): string {
   return `${prefijo}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-/** Crea una cuenta por la API (más rápido que por la interfaz cuando no es lo que se prueba). */
+/**
+ * Crea una cuenta por la API (más rápido que por la interfaz cuando no es lo que se prueba).
+ * Por defecto confirma su email con el enlace del correo, que hace falta para inscribirse o publicar.
+ */
 export async function crearCuenta(
   request: APIRequestContext,
   rol: 'CANDIDATO' | 'EMPRESA',
+  { verificada = true } = {},
 ): Promise<Cuenta> {
   const nombre = rol === 'CANDIDATO' ? `Candidato ${unico('e2e')}` : `Empresa ${unico('e2e')}`;
   const email = `${unico('e2e')}@e2e.test`;
@@ -28,6 +32,11 @@ export async function crearCuenta(
   });
   expect(respuesta.status()).toBe(201);
   const { accessToken } = (await respuesta.json()) as { accessToken: string };
+  if (verificada) {
+    const correo = await correoPara(request, email, 'Confirma tu email en Workflow');
+    const token = enlaceDe(correo, '/verificar-email').split('#')[1];
+    expect((await request.post('/api/auth/verificacion', { data: { token } })).status()).toBe(204);
+  }
   return { email, password, nombre, token: accessToken };
 }
 

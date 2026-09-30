@@ -81,7 +81,7 @@ class CandidaturasIntegrationTests extends IntegrationTestBase {
 		String empresa = nuevaEmpresa();
 		String ofertaId = publicarOferta(empresa);
 		String email = emailUnico();
-		String candidato = leer(registrar(email, "CANDIDATO"), "$.accessToken");
+		String candidato = registrarYVerificar(email, "CANDIDATO", "Ana García");
 		post(candidaturasDe(ofertaId), candidato, CARTA);
 
 		MvcTestResult recibidas = get(candidaturasDe(ofertaId), empresa);
@@ -228,6 +228,25 @@ class CandidaturasIntegrationTests extends IntegrationTestBase {
 		assertThat(abiertas).bodyJson().extractingPath("$.page.totalElements").isEqualTo(3);
 
 		assertThat(get(candidaturasDe(ofertaId) + "?estado=INVENTADO", empresa)).hasStatus(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	void haceFaltaElEmailConfirmadoParaInscribirse() {
+		String ofertaId = publicarOferta(nuevaEmpresa());
+		String email = emailUnico();
+		String candidato = tokenDeRegistro(registrar(email, "CANDIDATO"));
+
+		MvcTestResult sinConfirmar = post(candidaturasDe(ofertaId), candidato, "{}");
+
+		assertThat(sinConfirmar).hasStatus(HttpStatus.FORBIDDEN);
+		assertThat(sinConfirmar).bodyJson().extractingPath("$.title").isEqualTo("Email sin confirmar");
+		assertThat(sinConfirmar).bodyJson().extractingPath("$.detail").asString()
+				.startsWith("Confirma tu email para inscribirte en ofertas.");
+
+		post("/api/auth/verificacion", null, """
+				{"token": "%s"}
+				""".formatted(buzon.tokenDelUltimoEnlacePara(email)));
+		assertThat(post(candidaturasDe(ofertaId), candidato, "{}")).hasStatus(HttpStatus.CREATED);
 	}
 
 	@Test

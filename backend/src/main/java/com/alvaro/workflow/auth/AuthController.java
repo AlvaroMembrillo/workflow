@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -40,19 +41,24 @@ public class AuthController {
 	private final PasswordService passwordService;
 	private final SesionService sesiones;
 	private final CookieDeSesion cookie;
+	private final ProteccionDeAcceso proteccion;
 
 	@PostMapping("/registro")
 	@Operation(summary = "Registra un candidato o una empresa y abre su sesión",
 			description = "Devuelve un token de acceso y deja el token de refresco en una cookie HttpOnly.")
-	public ResponseEntity<TokenResponse> registrar(@Valid @RequestBody RegistroRequest request) {
+	public ResponseEntity<TokenResponse> registrar(@Valid @RequestBody RegistroRequest request,
+			HttpServletRequest peticion) {
+		proteccion.alRegistrarse(peticion.getRemoteAddr());
 		return conSesion(HttpStatus.CREATED, authService.registrar(request));
 	}
 
 	@PostMapping("/login")
 	@Operation(summary = "Inicia sesión",
-			description = "Devuelve un token de acceso y deja el token de refresco en una cookie HttpOnly.")
-	public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
-		return conSesion(HttpStatus.OK, authService.login(request));
+			description = "Devuelve un token de acceso y deja el token de refresco en una cookie HttpOnly. "
+					+ "429 tras varios intentos fallidos seguidos.")
+	public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest peticion) {
+		return conSesion(HttpStatus.OK,
+				proteccion.alEntrar(request.email(), peticion.getRemoteAddr(), () -> authService.login(request)));
 	}
 
 	@PostMapping("/refresco")
@@ -95,7 +101,8 @@ public class AuthController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(summary = "Envía un enlace para cambiar la contraseña",
 			description = "Responde 204 exista o no una cuenta con ese email, para no revelar qué emails están registrados.")
-	public void recuperarPassword(@Valid @RequestBody RecuperacionRequest request) {
+	public void recuperarPassword(@Valid @RequestBody RecuperacionRequest request, HttpServletRequest peticion) {
+		proteccion.alPedirRecuperacion(peticion.getRemoteAddr());
 		passwordService.solicitarCambio(request.email());
 	}
 

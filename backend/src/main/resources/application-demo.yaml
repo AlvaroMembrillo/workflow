@@ -1,6 +1,12 @@
 # application-demo.yml — demostración autocontenida con docker-compose.demo.yml
 # La base de datos se indica con SPRING_DATASOURCE_URL, _USERNAME y _PASSWORD.
 app:
+  limites:
+    # Todo el que prueba la demo llega desde la misma IP (la de Docker), y los tests de extremo a
+    # extremo crean decenas de cuentas por ejecución
+    login-por-ip: { maximo: 1000, ventana: 15m }
+    registro-por-ip: { maximo: 1000, ventana: 1h }
+    correos-por-ip: { maximo: 1000, ventana: 1h }
   sesion:
     # La demo se abre en http://localhost:8000, sin HTTPS
     cookie-segura: false

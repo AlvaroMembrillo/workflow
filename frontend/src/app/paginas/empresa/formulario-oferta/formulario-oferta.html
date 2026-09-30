@@ -21,6 +21,16 @@
 } @else if (editando() && !existente.hasValue()) {
   <p class="ayuda" role="status">Cargando la oferta…</p>
 } @else {
+  @if (cuenta.emailSinVerificar() && !editando()) {
+    <p class="aviso aviso-info">
+      <svg lucideMailWarning [size]="18"></svg>
+      <span>
+        <strong>Confirma tu email para publicar la oferta.</strong>
+        Te hemos enviado un enlace a {{ cuenta.datos.value()?.email }}. Puedes ir preparándola
+        mientras tanto.
+      </span>
+    </p>
+  }
   <div class="rejilla">
     <form class="formulario tarjeta" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
       @if (error(); as mensajeError) {

@@ -79,6 +79,15 @@
           @case ('CANDIDATO') {
             @if (comprobandoCandidatura()) {
               <p class="ayuda" role="status">Comprobando si ya te has inscrito…</p>
+            } @else if (cuenta.emailSinVerificar()) {
+              <p class="aviso aviso-info">
+                <svg lucideMailWarning [size]="18"></svg>
+                <span>
+                  <strong>Confirma tu email para inscribirte.</strong>
+                  Te hemos enviado un enlace a {{ cuenta.datos.value()?.email }}. Cuando lo abras,
+                  vuelve a esta página.
+                </span>
+              </p>
             } @else {
               <form class="formulario" (submit)="inscribirse($event)">
                 @if (error(); as mensajeError) {

@@ -29,6 +29,24 @@ class OfertasIntegrationTests extends IntegrationTestBase {
 	}
 
 	@Test
+	void haceFaltaElEmailConfirmadoParaPublicar() {
+		String email = emailUnico();
+		String empresa = tokenDeRegistro(registrar(email, "EMPRESA", "Empresa sin confirmar"));
+
+		MvcTestResult sinConfirmar = post("/api/ofertas", empresa, oferta("Backend Java", "REMOTO"));
+
+		assertThat(sinConfirmar).hasStatus(HttpStatus.FORBIDDEN);
+		assertThat(sinConfirmar).bodyJson().extractingPath("$.title").isEqualTo("Email sin confirmar");
+		assertThat(sinConfirmar).bodyJson().extractingPath("$.detail").asString()
+				.startsWith("Confirma tu email para publicar ofertas.");
+
+		post("/api/auth/verificacion", null, """
+				{"token": "%s"}
+				""".formatted(buzon.tokenDelUltimoEnlacePara(email)));
+		assertThat(post("/api/ofertas", empresa, oferta("Backend Java", "REMOTO"))).hasStatus(HttpStatus.CREATED);
+	}
+
+	@Test
 	void unCandidatoNoPuedePublicarOfertas() {
 		MvcTestResult respuesta = post("/api/ofertas", nuevoCandidato(), oferta("Desarrollador Java", "REMOTO"));
 

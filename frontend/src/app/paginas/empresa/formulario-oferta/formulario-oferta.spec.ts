@@ -3,7 +3,12 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
-import { empresaDePrueba, ofertaDePrueba } from '../../../../testing/datos-de-prueba';
+import {
+  empresaDePrueba,
+  ofertaDePrueba,
+  usuarioDePrueba,
+} from '../../../../testing/datos-de-prueba';
+import { iniciarSesionDePrueba } from '../../../../testing/sesion-de-prueba';
 import { FormularioOferta } from './formulario-oferta';
 
 describe('Formulario de oferta', () => {
@@ -45,6 +50,7 @@ describe('Formulario de oferta', () => {
   }
 
   beforeEach(() => {
+    localStorage.clear();
     TestBed.configureTestingModule({
       imports: [FormularioOferta],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
@@ -54,6 +60,22 @@ describe('Formulario de oferta', () => {
   });
 
   afterEach(() => backend.verify());
+
+  it('avisa de que hace falta confirmar el email para publicar', async () => {
+    iniciarSesionDePrueba({ rol: 'EMPRESA', email: 'rrhh@brisa.test' });
+    fixture = TestBed.createComponent(FormularioOferta);
+    TestBed.tick();
+    backend.expectOne('/api/empresas/me').flush(empresaDePrueba());
+    backend
+      .expectOne('/api/usuarios/me')
+      .flush(usuarioDePrueba({ rol: 'EMPRESA', email: 'rrhh@brisa.test', emailVerificado: false }));
+    await fixture.whenStable();
+
+    expect(pagina().querySelector('.aviso-info')!.textContent).toContain(
+      'Confirma tu email para publicar la oferta',
+    );
+    expect(pagina().querySelector('form')).not.toBeNull();
+  });
 
   describe('al publicar', () => {
     beforeEach(async () => {
