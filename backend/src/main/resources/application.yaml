@@ -49,8 +49,14 @@ springdoc:
 app:
   jwt:
     issuer: workflow-api
-    duracion-token: 1h
+    # Corto, porque un token de acceso no se puede revocar; la sesión se alarga con el token de refresco
+    duracion-token: 15m
     clave-privada: ${JWT_CLAVE_PRIVADA:}
+  sesion:
+    # Días sin usar la web tras los que hay que volver a entrar
+    duracion: 30d
+    margen-de-reutilizacion: 10s
+    cookie-segura: ${COOKIE_SEGURA:true}
   cors:
     origenes-permitidos: ${CORS_ORIGENES_PERMITIDOS:http://localhost:4200}
   correo:

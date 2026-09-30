@@ -2,7 +2,12 @@ package com.alvaro.workflow.auth;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,18 +38,42 @@ public class AuthController {
 	private final AuthService authService;
 	private final VerificacionEmailService verificacionEmail;
 	private final PasswordService passwordService;
+	private final SesionService sesiones;
+	private final CookieDeSesion cookie;
 
 	@PostMapping("/registro")
-	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "Registra un candidato o una empresa y devuelve su token de acceso")
-	public TokenResponse registrar(@Valid @RequestBody RegistroRequest request) {
-		return authService.registrar(request);
+	@Operation(summary = "Registra un candidato o una empresa y abre su sesión",
+			description = "Devuelve un token de acceso y deja el token de refresco en una cookie HttpOnly.")
+	public ResponseEntity<TokenResponse> registrar(@Valid @RequestBody RegistroRequest request) {
+		return conSesion(HttpStatus.CREATED, authService.registrar(request));
 	}
 
 	@PostMapping("/login")
-	@Operation(summary = "Inicia sesión y devuelve un token de acceso")
-	public TokenResponse login(@Valid @RequestBody LoginRequest request) {
-		return authService.login(request);
+	@Operation(summary = "Inicia sesión",
+			description = "Devuelve un token de acceso y deja el token de refresco en una cookie HttpOnly.")
+	public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+		return conSesion(HttpStatus.OK, authService.login(request));
+	}
+
+	@PostMapping("/refresco")
+	@Operation(summary = "Devuelve otro token de acceso a cambio del token de refresco de la cookie",
+			description = "El token de refresco solo vale una vez: la respuesta trae el siguiente en la cookie. "
+					+ "401 si la sesión ha caducado o se ha cerrado.")
+	public ResponseEntity<TokenResponse> refrescar(
+			@CookieValue(name = CookieDeSesion.NOMBRE, required = false) String tokenDeRefresco) {
+		if (tokenDeRefresco == null) {
+			throw new SesionNoValidaException();
+		}
+		return conSesion(HttpStatus.OK, authService.renovar(tokenDeRefresco));
+	}
+
+	@PostMapping("/salida")
+	@Operation(summary = "Cierra la sesión: invalida el token de refresco y borra la cookie")
+	public ResponseEntity<Void> salir(@CookieValue(name = CookieDeSesion.NOMBRE, required = false) String tokenDeRefresco) {
+		if (tokenDeRefresco != null) {
+			sesiones.cerrar(tokenDeRefresco);
+		}
+		return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookie.borrada().toString()).build();
 	}
 
 	@PostMapping("/verificacion")
@@ -75,6 +104,24 @@ public class AuthController {
 	@Operation(summary = "Cambia la contraseña con el token del enlace enviado por correo")
 	public void restablecerPassword(@Valid @RequestBody RestablecimientoRequest request) {
 		passwordService.restablecer(request.token(), request.password());
+	}
+
+	/** La sesión de la cookie ya no vale: además de responder 401, se le pide al navegador que la borre. */
+	@ExceptionHandler(SesionNoValidaException.class)
+	ResponseEntity<ProblemDetail> sesionNoValida(SesionNoValidaException ex) {
+		ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+		problema.setTitle(ex.getTitulo());
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.header(HttpHeaders.SET_COOKIE, cookie.borrada().toString())
+				.body(problema);
+	}
+
+	private ResponseEntity<TokenResponse> conSesion(HttpStatus estado, AuthService.Acceso acceso) {
+		ResponseEntity.BodyBuilder respuesta = ResponseEntity.status(estado);
+		if (acceso.tokenDeRefresco() != null) {
+			respuesta.header(HttpHeaders.SET_COOKIE, cookie.con(acceso.tokenDeRefresco()).toString());
+		}
+		return respuesta.body(acceso.token());
 	}
 
 }

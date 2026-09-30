@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 
 import { asentar } from '../../../testing/asentar';
 import { usuarioDePrueba } from '../../../testing/datos-de-prueba';
-import { tokenDePrueba } from '../../../testing/token-de-prueba';
+import { iniciarSesionDePrueba } from '../../../testing/sesion-de-prueba';
 import { Usuario } from '../../core/auth/modelos';
 import { Cuenta } from './cuenta';
 
@@ -15,12 +15,12 @@ describe('Mi cuenta', () => {
 
   async function abrir(usuario: Usuario = usuarioDePrueba()): Promise<void> {
     localStorage.clear();
-    localStorage.setItem('workflow.token', tokenDePrueba({ rol: usuario.rol }));
     TestBed.configureTestingModule({
       imports: [Cuenta],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     backend = TestBed.inject(HttpTestingController);
+    iniciarSesionDePrueba({ rol: usuario.rol });
     fixture = TestBed.createComponent(Cuenta);
     TestBed.tick();
     backend.expectOne('/api/usuarios/me').flush(usuario);

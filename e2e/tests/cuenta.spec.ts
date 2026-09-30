@@ -115,3 +115,39 @@ test('la empresa y el candidato reciben un correo con cada novedad de una candid
   );
   expect(avisoCandidato).toContain(`${empresa.nombre} está revisando tu candidatura`);
 });
+
+test('la sesión se mantiene al recargar sin guardar ningún token en el navegador', async ({
+  page,
+  request,
+  context,
+}) => {
+  const cuenta = await crearCuenta(request, 'CANDIDATO');
+  await entrar(page, cuenta.email, cuenta.password);
+
+  // El token de refresco va en una cookie que el JavaScript de la página no puede leer
+  const cookie = (await context.cookies()).find((c) => c.name === 'workflow_refresco');
+  expect(cookie).toMatchObject({ httpOnly: true, sameSite: 'Strict', path: '/api/auth' });
+  expect(await page.evaluate(() => document.cookie)).not.toContain('workflow_refresco');
+  // Y en el almacenamiento del navegador solo queda una marca de que hay sesión
+  expect(await page.evaluate(() => ({ ...localStorage }))).toEqual({ 'workflow.sesion': '1' });
+
+  // Al recargar, la sesión se recupera con la cookie y la página privada sigue abierta
+  await page.goto('/mis-candidaturas');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mis candidaturas');
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mis candidaturas');
+
+  // Al salir, la cookie se borra y el token de refresco deja de valer en el servidor
+  await page.getByRole('button', { name: 'Salir' }).click();
+  await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
+  await expect
+    .poll(async () => (await context.cookies()).some((c) => c.name === 'workflow_refresco'))
+    .toBe(false);
+  const reutilizada = await request.post('/api/auth/refresco', {
+    headers: { Cookie: `workflow_refresco=${cookie!.value}` },
+  });
+  expect(reutilizada.status()).toBe(401);
+
+  await page.goto('/mis-candidaturas');
+  await expect(page).toHaveURL(/\/entrar\?volver=/);
+});

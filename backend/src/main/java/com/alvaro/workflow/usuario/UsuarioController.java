@@ -2,15 +2,16 @@ package com.alvaro.workflow.usuario;
 
 import java.util.UUID;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alvaro.workflow.auth.CookieDeSesion;
 import com.alvaro.workflow.auth.PasswordService;
 import com.alvaro.workflow.auth.UsuarioActual;
 import com.alvaro.workflow.auth.dto.CambioDePasswordRequest;
@@ -29,6 +30,7 @@ public class UsuarioController {
 	private final UsuarioService usuarioService;
 	private final UsuarioMapper usuarioMapper;
 	private final PasswordService passwordService;
+	private final CookieDeSesion cookieDeSesion;
 
 	@GetMapping("/me")
 	@Operation(summary = "Devuelve los datos del usuario autenticado")
@@ -44,10 +46,14 @@ public class UsuarioController {
 	}
 
 	@PostMapping("/me/password")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(summary = "Cambia la contraseña del usuario autenticado, que debe indicar la actual")
-	public void cambiarPassword(@UsuarioActual UUID usuarioId, @Valid @RequestBody CambioDePasswordRequest request) {
-		passwordService.cambiar(usuarioId, request.passwordActual(), request.passwordNueva());
+	@Operation(summary = "Cambia la contraseña del usuario autenticado, que debe indicar la actual",
+			description = "Cierra las sesiones abiertas en otros dispositivos y renueva la de este.")
+	public ResponseEntity<Void> cambiarPassword(@UsuarioActual UUID usuarioId,
+			@Valid @RequestBody CambioDePasswordRequest request) {
+		String tokenDeRefresco = passwordService.cambiar(usuarioId, request.passwordActual(), request.passwordNueva());
+		return ResponseEntity.noContent()
+				.header(HttpHeaders.SET_COOKIE, cookieDeSesion.con(tokenDeRefresco).toString())
+				.build();
 	}
 
 }

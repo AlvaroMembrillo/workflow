@@ -27,12 +27,21 @@ public class AuthService {
 	private final TokenService tokenService;
 	private final EmpresaService empresaService;
 	private final VerificacionEmailService verificacionEmail;
+	private final SesionService sesiones;
+
+	/**
+	 * Lo que recibe el cliente al abrir o renovar una sesión.
+	 *
+	 * @param tokenDeRefresco el token para la cookie de sesión, o null si la cookie actual sigue valiendo
+	 */
+	public record Acceso(TokenResponse token, String tokenDeRefresco) {
+	}
 
 	@Transactional
-	public TokenResponse registrar(RegistroRequest request) {
+	public Acceso registrar(RegistroRequest request) {
 		Usuario usuario = crearCuenta(request);
 		verificacionEmail.enviarEnlace(usuario);
-		return tokenService.generar(usuario);
+		return abrirSesion(usuario);
 	}
 
 	/** Para los datos de ejemplo: crea la cuenta con el email ya verificado y sin enviar ningún correo. */
@@ -62,14 +71,26 @@ public class AuthService {
 		return usuario;
 	}
 
-	public TokenResponse login(LoginRequest request) {
+	@Transactional
+	public Acceso login(LoginRequest request) {
 		// DaoAuthenticationProvider responde igual (y tarda lo mismo) si el email no existe
 		// o si la contraseña es incorrecta, así no se puede averiguar qué emails están registrados
 		Authentication autenticacion = authenticationManager.authenticate(
 				UsernamePasswordAuthenticationToken.unauthenticated(Usuario.normalizarEmail(request.email()), request.password()));
 
 		UsuarioAutenticado usuario = (UsuarioAutenticado) autenticacion.getPrincipal();
-		return tokenService.generar(usuario.usuario());
+		return abrirSesion(usuario.usuario());
+	}
+
+	/** Canjea el token de refresco de la cookie por un token de acceso nuevo. */
+	@Transactional(noRollbackFor = SesionNoValidaException.class)
+	public Acceso renovar(String tokenDeRefresco) {
+		SesionService.Renovacion renovacion = sesiones.renovar(tokenDeRefresco);
+		return new Acceso(tokenService.generar(renovacion.usuario()), renovacion.tokenDeRefresco());
+	}
+
+	private Acceso abrirSesion(Usuario usuario) {
+		return new Acceso(tokenService.generar(usuario), sesiones.abrir(usuario));
 	}
 
 }

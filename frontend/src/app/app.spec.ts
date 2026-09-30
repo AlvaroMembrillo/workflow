@@ -4,16 +4,26 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { usuarioDePrueba } from '../testing/datos-de-prueba';
-import { tokenDePrueba } from '../testing/token-de-prueba';
+import { iniciarSesionDePrueba } from '../testing/sesion-de-prueba';
+import { OpcionesToken } from '../testing/token-de-prueba';
 import { App } from './app';
 
 describe('App', () => {
-  /** Con sesión, la aplicación pide los datos de la cuenta: se responde con `cuenta`. */
-  async function renderizar(cuenta = usuarioDePrueba()): Promise<HTMLElement> {
+  /**
+   * Con `sesion`, la aplicación se abre con esa sesión iniciada y pide los datos de la cuenta, que se
+   * responden con `cuenta`.
+   */
+  async function renderizar(
+    sesion?: OpcionesToken,
+    cuenta = usuarioDePrueba(),
+  ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [App],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
+    if (sesion) {
+      iniciarSesionDePrueba(sesion);
+    }
     const fixture = TestBed.createComponent(App);
     TestBed.tick();
     const backend = TestBed.inject(HttpTestingController);
@@ -45,12 +55,7 @@ describe('App', () => {
   });
 
   it('con sesión de candidato muestra sus candidaturas, su email y el botón de salir', async () => {
-    localStorage.setItem(
-      'workflow.token',
-      tokenDePrueba({ rol: 'CANDIDATO', email: 'ana@test.com' }),
-    );
-
-    const pagina = await renderizar();
+    const pagina = await renderizar({ rol: 'CANDIDATO', email: 'ana@test.com' });
 
     expect(pagina.querySelector('header')!.textContent).toContain('Mis candidaturas');
     expect(pagina.querySelector('header')!.textContent).toContain('ana@test.com');
@@ -62,9 +67,7 @@ describe('App', () => {
   });
 
   it('recuerda confirmar el email a quien todavía no lo ha hecho', async () => {
-    localStorage.setItem('workflow.token', tokenDePrueba());
-
-    const pagina = await renderizar(usuarioDePrueba({ emailVerificado: false }));
+    const pagina = await renderizar({}, usuarioDePrueba({ emailVerificado: false }));
 
     const aviso = pagina.querySelector('aside[aria-label="Email sin confirmar"]')!;
     expect(aviso.textContent).toContain('Te hemos enviado un enlace a ana@test.com');

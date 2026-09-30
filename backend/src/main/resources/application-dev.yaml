@@ -6,6 +6,9 @@ spring:
     password: portal
 
 app:
+  sesion:
+    # En local la web va por HTTP: una cookie "Secure" no se guardaría en todos los navegadores
+    cookie-segura: false
   jwt:
     # Se genera sola la primera vez que arranca la aplicación (está en .gitignore)
     clave-privada: .jwt/dev-clave-privada.pem

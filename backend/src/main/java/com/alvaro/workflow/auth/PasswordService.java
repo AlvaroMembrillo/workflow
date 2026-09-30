@@ -25,6 +25,7 @@ public class PasswordService {
 	private final TokensDeUnUso tokens;
 	private final CorreosDeCuenta correos;
 	private final ColaDeCorreo colaDeCorreo;
+	private final SesionService sesiones;
 
 	/**
 	 * Envía un enlace para cambiar la contraseña si existe una cuenta con ese email. No indica si existe:
@@ -44,17 +45,26 @@ public class PasswordService {
 		usuario.cambiarPassword(passwordEncoder.encode(passwordNueva));
 		// Ha abierto un enlace enviado a su email: queda demostrado que es suyo
 		usuario.verificarEmail();
+		// Quien tuviera la sesión abierta con la contraseña anterior se queda fuera
+		sesiones.cerrarTodas(usuario.getId());
 		colaDeCorreo.encolar(correos.passwordCambiada(usuario));
 	}
 
+	/**
+	 * Cambia la contraseña y cierra las sesiones de los demás dispositivos.
+	 *
+	 * @return el token de refresco de la sesión nueva para este dispositivo
+	 */
 	@Transactional
-	public void cambiar(UUID usuarioId, String passwordActual, String passwordNueva) {
+	public String cambiar(UUID usuarioId, String passwordActual, String passwordNueva) {
 		Usuario usuario = usuarioService.buscarPorId(usuarioId);
 		if (!passwordEncoder.matches(passwordActual, usuario.getPasswordHash())) {
 			throw new CampoNoValidoException("passwordActual", "La contraseña actual no es correcta");
 		}
 		usuario.cambiarPassword(passwordEncoder.encode(passwordNueva));
 		colaDeCorreo.encolar(correos.passwordCambiada(usuario));
+		sesiones.cerrarTodas(usuarioId);
+		return sesiones.abrir(usuario);
 	}
 
 }
