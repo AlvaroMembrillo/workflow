@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { crearCuenta, entrar, ofertaPorTitulo, PASSWORD_DEMO, unico } from './apoyo';
+import { crearCuenta, entrar, ofertaPorTitulo, PASSWORD_DEMO, subirCv, unico } from './apoyo';
 
 test('la empresa pasa a revisión y acepta una candidatura, y el candidato lo ve', async ({
   page,
@@ -9,6 +9,7 @@ test('la empresa pasa a revisión y acepta una candidatura, y el candidato lo ve
   // Un candidato nuevo se inscribe en la oferta de Java de Lumen Seguros (empresa de la demo)
   const oferta = await ofertaPorTitulo(request, 'Desarrollador/a Java Backend');
   const candidato = await crearCuenta(request, 'CANDIDATO');
+  await subirCv(request, candidato, 'CV del candidato.pdf');
   const inscripcion = await request.post(`/api/ofertas/${oferta.id}/candidaturas`, {
     headers: { Authorization: `Bearer ${candidato.token}` },
     data: { cartaPresentacion: 'Tengo experiencia con Spring Boot.' },
@@ -22,8 +23,13 @@ test('la empresa pasa a revisión y acepta una candidatura, y el candidato lo ve
   await expect(fila).toContainText('sin responder');
   await fila.getByRole('link', { name: 'Candidaturas' }).click();
 
-  // Sin responder → En revisión
+  // Descarga el currículum del candidato
   const tarjeta = page.locator('li.candidatura', { hasText: candidato.nombre });
+  const descarga = page.waitForEvent('download');
+  await tarjeta.getByRole('button', { name: `Descargar currículum de ${candidato.nombre}` }).click();
+  expect((await descarga).suggestedFilename()).toBe('CV del candidato.pdf');
+
+  // Sin responder → En revisión
   await tarjeta.getByRole('button', { name: 'Pasar a revisión' }).click();
   await expect(page.getByText(`La candidatura de ${candidato.nombre} pasa a revisión.`)).toBeVisible();
 

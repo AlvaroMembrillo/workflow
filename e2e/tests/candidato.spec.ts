@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { ofertaPorTitulo, unico } from './apoyo';
+import { ofertaPorTitulo, PDF_DE_PRUEBA, unico } from './apoyo';
 
 test('un candidato se registra desde una oferta, se inscribe, sigue su candidatura y la retira', async ({
   page,
@@ -18,6 +18,15 @@ test('un candidato se registra desde una oferta, se inscribe, sigue su candidatu
   await page.getByLabel('Contraseña', { exact: true }).fill('clave-e2e-segura');
   await page.getByRole('button', { name: 'Crear cuenta' }).click();
   await expect(page).toHaveURL(new RegExp(`/ofertas/${oferta.id}$`));
+
+  // Sube su currículum desde la propia oferta: se enviará con esta candidatura y con las siguientes
+  await page.locator('app-cv-candidato input[type="file"]').setInputFiles({
+    name: 'CV Candidata E2E.pdf',
+    mimeType: 'application/pdf',
+    buffer: PDF_DE_PRUEBA,
+  });
+  await expect(page.locator('app-cv-candidato')).toContainText('CV Candidata E2E.pdf');
+  await expect(page.locator('app-cv-candidato').getByRole('status')).toHaveText('Currículum subido.');
 
   // Se inscribe con una carta de presentación
   await page.getByRole('button', { name: 'Añadir carta de presentación (opcional)' }).click();

@@ -86,6 +86,21 @@
 
             <app-progreso-candidatura [candidatura]="candidatura" />
 
+            @if (candidatura.cv; as cv) {
+              <button
+                type="button"
+                class="btn btn-secundario btn-pequeno cv"
+                [disabled]="descargando() === candidatura.id"
+                (click)="descargarCv(candidatura)"
+              >
+                <svg lucideDownload [size]="16"></svg>
+                {{ descargando() === candidatura.id ? 'Descargando…' : 'Descargar currículum' }}
+                <span class="solo-lectores">de {{ candidatura.candidato.nombre }}</span>
+              </button>
+            } @else if (candidatura.estado !== 'RETIRADA') {
+              <p class="sin-cv">No ha subido currículum.</p>
+            }
+
             @if (candidatura.cartaPresentacion) {
               <details>
                 <summary>Carta de presentación</summary>

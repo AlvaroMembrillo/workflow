@@ -15,6 +15,11 @@ spring:
         # Páginas como {"content": [...], "page": {...}}, un formato estable para el frontend
         serialization-mode: via-dto
 
+  servlet:
+    multipart:
+      # Solo se suben currículos. Algo de margen sobre app.cv.tamano-maximo para las cabeceras de la petición
+      max-file-size: 5MB
+      max-request-size: 6MB
   mail:
     # Por defecto, Mailpit (docker compose): recoge los correos y los muestra en http://localhost:8025
     host: ${SMTP_HOST:localhost}
@@ -55,6 +60,8 @@ app:
   enlaces:
     validez-verificacion: 48h
     validez-restablecimiento: 1h
+  cv:
+    tamano-maximo: 5MB
   ofertas:
     cierre-automatico:
       inactividad: 60d

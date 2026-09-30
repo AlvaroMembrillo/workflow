@@ -15,6 +15,7 @@ import { RouterLink } from '@angular/router';
 import { LucideCircleAlert, LucideCircleCheck, LucideFileText, LucideLock } from '@lucide/angular';
 import { finalize } from 'rxjs';
 
+import { CvCandidato } from '../../../compartido/cv-candidato/cv-candidato';
 import { EstadoVacio } from '../../../compartido/estado-vacio/estado-vacio';
 import { Fecha } from '../../../compartido/fecha/fecha';
 import { Salario } from '../../../compartido/salario/salario';
@@ -38,6 +39,7 @@ export const LONGITUD_MAXIMA_CARTA = 5000;
     Salario,
     Fecha,
     EstadoVacio,
+    CvCandidato,
     LucideCircleAlert,
     LucideCircleCheck,
     LucideFileText,

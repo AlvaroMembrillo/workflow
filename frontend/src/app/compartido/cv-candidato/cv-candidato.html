@@ -1,0 +1,83 @@
+<div class="cv">
+  @if (curriculum(); as cv) {
+    <div class="fichero">
+      <svg lucideFileText [size]="28"></svg>
+      <div>
+        <p class="nombre">{{ cv.nombreFichero }}</p>
+        <p class="ayuda">
+          PDF · {{ tamano() }} · subido <app-fecha [iso]="cv.fechaSubida" formato="relativa" />
+        </p>
+      </div>
+    </div>
+    <div class="acciones">
+      <button
+        type="button"
+        class="btn btn-secundario btn-pequeno"
+        [disabled]="ocupado()"
+        (click)="descargar()"
+      >
+        Descargar
+      </button>
+      <button
+        type="button"
+        class="btn btn-secundario btn-pequeno"
+        [disabled]="ocupado()"
+        (click)="elegirFichero()"
+      >
+        {{ ocupado() ? 'Un momento…' : 'Sustituir' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-fantasma btn-pequeno quitar"
+        [disabled]="ocupado()"
+        (click)="confirmandoQuitar.set(true)"
+      >
+        Quitar
+      </button>
+    </div>
+  } @else if (noSePuedeCargar()) {
+    <p class="ayuda">No hemos podido comprobar si has subido tu currículum.</p>
+    <div class="acciones">
+      <button type="button" class="btn btn-secundario btn-pequeno" (click)="guardado.reload()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (cargando()) {
+    <p class="ayuda">Comprobando tu currículum…</p>
+  } @else {
+    <p>Todavía no has subido tu currículum.</p>
+    <div class="acciones">
+      <button
+        type="button"
+        class="btn btn-secundario btn-pequeno"
+        [disabled]="ocupado()"
+        (click)="elegirFichero()"
+      >
+        {{ ocupado() ? 'Subiendo…' : 'Subir currículum' }}
+      </button>
+      <span class="ayuda">En PDF, de 5 MB como máximo.</span>
+    </div>
+  }
+
+  <input #selector type="file" accept="application/pdf,.pdf" hidden (change)="subir($event)" />
+
+  <p class="ayuda novedad" role="status">{{ novedad() }}</p>
+  @if (error(); as mensajeError) {
+    <p class="aviso aviso-error" role="alert">
+      <svg lucideCircleAlert [size]="18"></svg>
+      {{ mensajeError }}
+    </p>
+  }
+</div>
+
+<app-dialogo-confirmacion
+  id="quitar-cv"
+  [abierto]="confirmandoQuitar()"
+  titulo="¿Quitar tu currículum?"
+  texto="Las empresas en las que te has inscrito dejarán de poder descargarlo. Puedes subir otro cuando quieras."
+  textoConfirmar="Quitar"
+  [peligro]="true"
+  [ocupado]="ocupado()"
+  (confirmar)="quitar()"
+  (cancelar)="confirmandoQuitar.set(false)"
+/>

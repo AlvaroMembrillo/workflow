@@ -42,6 +42,16 @@
     }
   </section>
 
+  @if (usuario.rol === 'CANDIDATO') {
+    <section class="tarjeta bloque" aria-labelledby="titulo-cv">
+      <h2 id="titulo-cv">Tu currículum</h2>
+      <p class="ayuda">
+        Lo ven las empresas de las ofertas en las que te inscribes, junto a tu nombre y tu email.
+      </p>
+      <app-cv-candidato />
+    </section>
+  }
+
   <section class="tarjeta bloque" aria-labelledby="titulo-avisos">
     <h2 id="titulo-avisos">Avisos por correo</h2>
     <label class="casilla">

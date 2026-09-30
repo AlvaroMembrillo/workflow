@@ -107,6 +107,20 @@ h1 {
   justify-self: start;
 }
 
+.cv {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.cv .etiqueta {
+  font-family: var(--f-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
 textarea.input {
   resize: vertical;
   min-height: 8rem;

@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { asentar } from '../../../testing/asentar';
 import { usuarioDePrueba } from '../../../testing/datos-de-prueba';
 import { tokenDePrueba } from '../../../testing/token-de-prueba';
 import { Usuario } from '../../core/auth/modelos';
@@ -23,6 +24,13 @@ describe('Mi cuenta', () => {
     fixture = TestBed.createComponent(Cuenta);
     TestBed.tick();
     backend.expectOne('/api/usuarios/me').flush(usuario);
+    // Los candidatos ven además su currículum
+    await asentar();
+    backend
+      .match('/api/candidatos/me/cv')
+      .forEach((peticion) =>
+        peticion.flush({ title: 'Sin currículum' }, { status: 404, statusText: 'Not Found' }),
+      );
     await fixture.whenStable();
   }
 
@@ -97,8 +105,17 @@ describe('Mi cuenta', () => {
     expect(pagina().textContent).toContain('Algo ha fallado en el servidor');
   });
 
-  it('explica a la empresa qué avisos recibe', async () => {
+  it('el candidato gestiona su currículum desde su cuenta', async () => {
+    await abrir();
+
+    expect(pagina().querySelector('#titulo-cv')!.textContent).toBe('Tu currículum');
+    expect(pagina().querySelector('app-cv-candidato')!.textContent).toContain('Subir currículum');
+  });
+
+  it('explica a la empresa qué avisos recibe y no le pide currículum', async () => {
     await abrir(usuarioDePrueba({ rol: 'EMPRESA', nombre: 'Lumen Seguros' }));
+
+    expect(pagina().querySelector('app-cv-candidato')).toBeNull();
 
     expect(pagina().querySelector('.casilla')!.textContent).toContain(
       'cuando alguien se inscriba en una de mis ofertas',

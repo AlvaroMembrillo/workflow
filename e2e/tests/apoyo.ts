@@ -31,6 +31,22 @@ export async function crearCuenta(
   return { email, password, nombre, token: accessToken };
 }
 
+/** Un PDF mínimo: la API solo comprueba que el fichero empiece como un PDF. */
+export const PDF_DE_PRUEBA = Buffer.from('%PDF-1.4\n% currículum de prueba de los tests E2E\n');
+
+/** Sube por la API el currículum de un candidato. */
+export async function subirCv(
+  request: APIRequestContext,
+  candidato: Cuenta,
+  nombre: string,
+): Promise<void> {
+  const respuesta = await request.post('/api/candidatos/me/cv', {
+    headers: { Authorization: `Bearer ${candidato.token}` },
+    multipart: { fichero: { name: nombre, mimeType: 'application/pdf', buffer: PDF_DE_PRUEBA } },
+  });
+  expect(respuesta.status()).toBe(200);
+}
+
 /** Busca una oferta abierta por su título exacto. */
 export async function ofertaPorTitulo(
   request: APIRequestContext,

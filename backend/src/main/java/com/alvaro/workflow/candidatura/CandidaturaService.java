@@ -20,6 +20,10 @@ import com.alvaro.workflow.candidatura.dto.ResumenCandidaturas;
 import com.alvaro.workflow.common.AccesoDenegadoException;
 import com.alvaro.workflow.common.PeticionNoValidaException;
 import com.alvaro.workflow.common.RecursoNoEncontradoException;
+import com.alvaro.workflow.cv.Curriculum;
+import com.alvaro.workflow.cv.CurriculumResponse;
+import com.alvaro.workflow.cv.CurriculumResumen;
+import com.alvaro.workflow.cv.CurriculumService;
 import com.alvaro.workflow.oferta.Oferta;
 import com.alvaro.workflow.oferta.OfertaService;
 import com.alvaro.workflow.usuario.Usuario;
@@ -36,6 +40,7 @@ public class CandidaturaService {
 	private final UsuarioService usuarioService;
 	private final CandidaturaMapper candidaturaMapper;
 	private final AvisosDeCandidaturas avisos;
+	private final CurriculumService curriculumService;
 
 	@Transactional
 	public MiCandidaturaResponse inscribirse(UUID candidatoId, UUID ofertaId, CandidaturaRequest request) {
@@ -92,7 +97,10 @@ public class CandidaturaService {
 		Page<Candidatura> pagina = estados == null || estados.isEmpty()
 				? candidaturas.findByOfertaId(ofertaId, pageable)
 				: candidaturas.findByOfertaIdAndEstadoIn(ofertaId, estados, pageable);
-		return pagina.map(candidaturaMapper::toRecibida);
+		Map<UUID, CurriculumResumen> curriculos = curriculumService
+				.resumenesPorUsuario(pagina.map(candidatura -> candidatura.getCandidato().getId()).getContent());
+		return pagina.map(candidatura -> candidaturaMapper.toRecibida(candidatura,
+				CurriculumResponse.de(curriculos.get(candidatura.getCandidato().getId()))));
 	}
 
 	@Transactional
@@ -107,7 +115,24 @@ public class CandidaturaService {
 
 		candidatura.cambiarEstado(estado);
 		avisos.estadoCambiado(candidatura);
-		return candidaturaMapper.toRecibida(candidaturas.saveAndFlush(candidatura));
+		return candidaturaMapper.toRecibida(candidaturas.saveAndFlush(candidatura),
+				curriculumService.resumenSiExiste(candidatura.getCandidato().getId()).map(CurriculumResponse::de).orElse(null));
+	}
+
+	/**
+	 * El currículum del candidato de una candidatura, para la empresa que publicó la oferta. Si el candidato
+	 * retira su candidatura, la empresa deja de poder descargarlo.
+	 */
+	@Transactional(readOnly = true)
+	public Curriculum curriculumDeLaCandidatura(UUID usuarioEmpresaId, UUID candidaturaId) {
+		Candidatura candidatura = candidatura(candidaturaId);
+		if (!candidatura.getOferta().esDeLaEmpresaDe(usuarioEmpresaId)) {
+			throw new AccesoDenegadoException("La candidatura es de una oferta de otra empresa");
+		}
+		if (candidatura.getEstado() == EstadoCandidatura.RETIRADA) {
+			throw new RecursoNoEncontradoException("Sin currículum", "El candidato ha retirado su candidatura");
+		}
+		return curriculumService.obtener(candidatura.getCandidato().getId());
 	}
 
 	/** Resumen de candidaturas por estado de cada oferta, calculado con una sola consulta. */

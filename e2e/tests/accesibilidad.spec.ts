@@ -61,6 +61,19 @@ for (const tema of ['light', 'dark'] as const) {
       await auditar(page);
     });
 
+    test('inscripción con el currículum y mi cuenta de candidata', async ({ page, request }) => {
+      // Marta tiene currículum y no se ha inscrito en esta oferta
+      const oferta = await ofertaPorTitulo(request, 'Ingeniero/a de QA');
+      await entrar(page, 'marta@demo.test', PASSWORD_DEMO);
+      await page.goto(`/ofertas/${oferta.id}`);
+      await expect(page.locator('app-cv-candidato')).toContainText('CV Marta Sanz.pdf');
+      await auditar(page);
+
+      await page.goto('/cuenta');
+      await expect(page.locator('app-cv-candidato')).toContainText('CV Marta Sanz.pdf');
+      await auditar(page);
+    });
+
     test('mis candidaturas', async ({ page }) => {
       await entrar(page, 'ana@demo.test', PASSWORD_DEMO);
       await page.goto('/mis-candidaturas');

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import com.alvaro.workflow.IntegrationTestBase;
@@ -227,6 +228,43 @@ class CandidaturasIntegrationTests extends IntegrationTestBase {
 		assertThat(abiertas).bodyJson().extractingPath("$.page.totalElements").isEqualTo(3);
 
 		assertThat(get(candidaturasDe(ofertaId) + "?estado=INVENTADO", empresa)).hasStatus(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	void laEmpresaVeQueElCandidatoTieneCurriculumYLoDescarga() {
+		String empresa = nuevaEmpresa();
+		String ofertaId = publicarOferta(empresa);
+		String conCv = nuevoCandidato();
+		subirCv(conCv, "cv.pdf", pdf("currículum"));
+		String candidaturaConCv = leer(post(candidaturasDe(ofertaId), conCv, "{}"), "$.id");
+		String candidaturaSinCv = leer(post(candidaturasDe(ofertaId), nuevoCandidato(), "{}"), "$.id");
+
+		MvcTestResult recibidas = get(candidaturasDe(ofertaId) + "?sort=fechaCreacion,asc", empresa);
+
+		assertThat(recibidas).bodyJson().extractingPath("$.content[0].cv.nombreFichero").isEqualTo("cv.pdf");
+		assertThat(recibidas).bodyJson().extractingPath("$.content[1].cv").isNull();
+
+		MvcTestResult descarga = get("/api/candidaturas/" + candidaturaConCv + "/cv", empresa);
+		assertThat(descarga).hasStatusOk().hasContentType(MediaType.APPLICATION_PDF);
+		assertThat(descarga.getResponse().getContentAsByteArray()).isEqualTo(pdf("currículum"));
+		assertThat(get("/api/candidaturas/" + candidaturaSinCv + "/cv", empresa)).hasStatus(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	void elCurriculumSoloLoDescargaLaEmpresaDeLaOfertaYMientrasLaCandidaturaSigaEnPie() {
+		String empresa = nuevaEmpresa();
+		String candidato = nuevoCandidato();
+		subirCv(candidato, "cv.pdf", pdf("currículum"));
+		String candidaturaId = leer(post(candidaturasDe(publicarOferta(empresa)), candidato, "{}"), "$.id");
+		String cv = "/api/candidaturas/" + candidaturaId + "/cv";
+
+		assertThat(get(cv, nuevaEmpresa())).hasStatus(HttpStatus.FORBIDDEN);
+		assertThat(get(cv, candidato)).hasStatus(HttpStatus.FORBIDDEN);
+		assertThat(get(cv, null)).hasStatus(HttpStatus.UNAUTHORIZED);
+
+		post("/api/candidaturas/" + candidaturaId + "/retirada", candidato, "");
+
+		assertThat(get(cv, empresa)).hasStatus(HttpStatus.NOT_FOUND);
 	}
 
 	private String publicarOferta(String tokenEmpresa) {

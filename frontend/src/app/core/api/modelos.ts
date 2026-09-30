@@ -94,12 +94,22 @@ export interface CandidatoResumen {
   email: string;
 }
 
+/** El currículum en PDF de un candidato, sin su contenido. */
+export interface Curriculum {
+  nombreFichero: string;
+  /** En bytes. */
+  tamano: number;
+  fechaSubida: string;
+}
+
 /** Una candidatura vista por la empresa que publicó la oferta. */
 export interface CandidaturaRecibida {
   id: string;
   candidato: CandidatoResumen;
   estado: EstadoCandidatura;
   cartaPresentacion: string | null;
+  /** El currículum del candidato, o null si no ha subido ninguno. */
+  cv: Curriculum | null;
   fechaCreacion: string;
   fechaRevision: string | null;
   fechaResolucion: string | null;
